@@ -85,6 +85,7 @@ Display formatting only — no live conversion in V1.
 
 ## V2 — Power Features
 
+- **Dark-mode UI** — full dark-mode color scheme with adaptive colors, elevated surfaces, and teal accent visibility
 - **Unequal splits** — assign custom amounts/percentages per person
 - **Live currency conversion** — API-backed real-time rates
 - **VisionKit receipt scanner** — OCR to extract bill total from photos

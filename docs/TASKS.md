@@ -119,4 +119,39 @@ BillBuddy development to-do list, organized by milestone.
 - [x] Capture screenshots for README (dark mode, light mode)
 - [x] Update README.md with real screenshots
 - [x] Move [Unreleased] items to [1.0.0] in CHANGELOG.md
-- [ ] Tag release: `git tag v1.0.0`
+- [x] Tag release: `git tag v1.0.0`
+
+---
+
+## V2 — Power Features
+
+### Dark-Mode UI
+
+- [ ] Implement full dark-mode color scheme — dark backgrounds, elevated card surfaces, teal accent visibility
+- [ ] Update `AppColors` with dark-mode-specific adaptive colors using `Color(.init(dynamicProvider:))`
+- [ ] QA all views in dark mode — text readability, contrast ratios, card elevation
+- [ ] Add dark-mode screenshots to README
+
+### Unequal Splits
+
+- [ ] Assign custom amounts/percentages per person
+
+### Live Currency Conversion
+
+- [ ] API-backed real-time exchange rates
+
+### VisionKit Receipt Scanner
+
+- [ ] OCR to extract bill total from photos
+
+### SwiftData Bill History
+
+- [ ] Saved calculations with search/filter
+
+### Rounding Options
+
+- [ ] Round tip, total, or per-person to nearest unit
+
+### WidgetKit Home Screen Widget
+
+- [ ] Quick-access recent calculation
