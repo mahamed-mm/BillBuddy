@@ -4,8 +4,11 @@ A native iOS tip calculator and bill splitter — built with SwiftUI, zero exter
 
 > Calculate tips, split bills, and format amounts in NOK, USD, or KES — all in a single, polished screen.
 
-<!-- Screenshots will be added after V1 is complete -->
-<!-- ![BillBuddy Screenshot](screenshots/dark-mode.png) -->
+<p align="center">
+  <img src="screenshots/nok-results.png" width="250" alt="NOK currency with 10% tip" />
+  <img src="screenshots/usd-tip.png" width="250" alt="USD currency with 5% tip" />
+  <img src="screenshots/kes-split.png" width="250" alt="KES currency with bill split" />
+</p>
 
 ---
 
@@ -40,7 +43,7 @@ A native iOS tip calculator and bill splitter — built with SwiftUI, zero exter
 
 ### Prerequisites
 
-- macOS with **Xcode 15+** installed
+- macOS with **Xcode 16+** installed
 - iOS 17+ Simulator or physical device
 
 ### Setup
@@ -87,7 +90,7 @@ billBudy/
 
 | Version | Focus | Status |
 |---------|-------|--------|
-| **V1** | Tip calculator, bill splitting, multi-currency display, dark-mode UI | In Progress |
+| **V1** | Tip calculator, bill splitting, multi-currency display, dark-mode UI | Done |
 | **V2** | Unequal splits, live currency conversion, receipt scanner, bill history, widgets | Planned |
 | **V3** | Payment links (Vipps/M-Pesa), region-aware tips, multi-language, AI input, Apple Watch | Planned |
 

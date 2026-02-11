@@ -8,17 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(CalculatorViewModel.self) private var viewModel
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        CalculatorView()
     }
 }
 
 #Preview {
     ContentView()
+        .environment(CalculatorViewModel())
 }

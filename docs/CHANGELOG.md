@@ -8,46 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Added
-
-- Project scaffolding with MVVM folder structure
-- `TipPreset` model — 6 presets (0/5/10/15/20/25%) + custom
-- `Currency` model — NOK, USD, KES with locale and symbol
-- `TipCalculation` result snapshot struct
-- `CalculatorViewModel` with `@Observable` — all tip/split business logic
-- `CalculatorView` — main screen composition (single ScrollView)
-- `BillInputView` — currency-prefixed decimal text field
-- `TipSelectorView` — preset grid + custom slider (0–50%)
-- `TipPresetButton` — reusable selected/unselected chip
-- `SplitControlView` — +/- stepper for 1–20 people
-- `ResultsCardView` — tip, total, and per-person breakdown
-- `BreakdownRow` — label-value display row
-- `CurrencyPickerView` — segmented NOK | USD | KES selector
-- `GlassCard` — reusable elevated card container
-- `HapticManager` — light/medium impact and success notification
-- `CurrencyFormatter` — cached locale-aware NumberFormatters
-- `AppColors` — teal accent (#00E5CC), card backgrounds, text colors
-- `AppTypography` — rounded system font presets
-- `AppSpacing` — spacing scale (4–48pt) and corner radii
-- `View+HapticFeedback` extension
-- `Double+CurrencyFormatted` extension
-- `@AppStorage` persistence for currency, tip %, and split count
-- Spring animations on value changes (`.spring(response: 0.4, dampingFraction: 0.7)`)
-- Staggered card entrance animations
-- Dark-mode-first UI with functional light mode
-- Project documentation: README, ARCHITECTURE, STYLE-GUIDE, TASKS, TESTING, CHANGELOG
+_No unreleased changes._
 
 ---
 
-## [1.0.0] — TBD
-
-> First public release. All items from [Unreleased] will be moved here upon release.
+## [1.0.0] — 2026-02-12
 
 ### Added
 
-- V1 tip calculator with 6 presets + custom slider
-- Equal bill splitting for 1–20 people
-- Multi-currency display (NOK, USD, KES)
-- Dark-mode-first UI with teal accent
-- Haptic feedback on interactions
-- Preference persistence across sessions
+- **Tip Calculator** — 6 preset buttons (0%, 5%, 10%, 15%, 20%, 25%) + custom slider (0-50%)
+- **Bill Splitting** — equal split for 1-20 people with per-person breakdown
+- **Multi-Currency Display** — NOK (kr), USD ($), KES (KSh) with locale-correct formatting
+- **Dark-Mode-First UI** — teal accent (#00E5CC), elevated glass cards, high-contrast text
+- **Haptic Feedback** — light impact on tip selection, medium on split change, success on first result
+- **Spring Animations** — smooth value transitions (`.spring(response: 0.4, dampingFraction: 0.7)`) and staggered card entrances
+- **Persistent Preferences** — currency, tip %, and split count saved via `@AppStorage`
+- **MVVM Architecture** — `@Observable` ViewModel with `@Environment` injection
+- **Design System** — `AppColors`, `AppTypography`, `AppSpacing` token enums
+- **Services** — `HapticManager` and `CurrencyFormatter` enum namespaces with cached formatters
+- **Extensions** — `View+HapticFeedback` and `Double+CurrencyFormatted` helpers
+- **Project Documentation** — README, ARCHITECTURE, STYLE-GUIDE, TASKS, TESTING, CHANGELOG
