@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+_No unreleased changes._
+
+---
+
+## [1.0.2] — 2026-02-12
+
+### Improved
+
+- **Numeric text transitions** — added `.contentTransition(.numericText())` to tip, total, and per-person values in `BreakdownRow` for smooth digit animations
+- **Currency change animation** — `ResultsCardView` now animates with spring transition when switching between NOK/USD/KES
+- **Broader animation coverage** — added spring animations driven by `effectiveTipPercent` and `splitCount` so all value changes trigger the numeric transition
+
+---
+
+## [1.0.1] — 2026-02-12
+
 ### Fixed
 
 - **Haptic feedback on first calculation** — wired `HapticManager.success()` in `ResultsCardView` via `.onChange` guard so it fires once when bill amount first becomes positive
