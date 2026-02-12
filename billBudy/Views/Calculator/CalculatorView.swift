@@ -10,6 +10,7 @@ struct CalculatorView: View {
                 BillInputView()
                 TipSelectorView()
                 SplitControlView()
+                RoundingSelectorView()
                 ResultsCardView()
             }
             .padding(.horizontal, AppSpacing.md)

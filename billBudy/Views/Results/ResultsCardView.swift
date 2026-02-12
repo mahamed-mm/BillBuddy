@@ -39,6 +39,7 @@ struct ResultsCardView: View {
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.effectiveTipPercent)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.splitCount)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.selectedCurrency)
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.selectedRounding)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Results")
         .accessibilityValue(rows.map { "\($0.label): \($0.value)" }.joined(separator: ", "))

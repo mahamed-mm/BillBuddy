@@ -13,7 +13,8 @@ billBudy/
 ├── Models/
 │   ├── TipPreset.swift                  # Enum: zero/five/ten/fifteen/twenty/twentyFive/custom
 │   ├── Currency.swift                   # Enum: nok/usd/kes with symbol, flag, locale
-│   └── TipCalculation.swift             # Struct: computed result snapshot
+│   ├── TipCalculation.swift             # Struct: computed result snapshot
+│   └── RoundingMode.swift               # Enum: none/roundTip/roundTotal/roundPerPerson
 ├── ViewModels/
 │   └── CalculatorViewModel.swift        # @Observable, all business logic
 ├── Views/
@@ -22,7 +23,8 @@ billBudy/
 │   │   ├── BillInputView.swift          # Currency-prefixed decimal text field
 │   │   ├── TipSelectorView.swift        # Preset grid + custom slider
 │   │   ├── TipPresetButton.swift        # Reusable selected/unselected chip
-│   │   └── SplitControlView.swift       # +/- stepper for people count
+│   │   ├── SplitControlView.swift       # +/- stepper for people count
+│   │   └── RoundingSelectorView.swift   # Horizontal pill selector for rounding mode
 │   ├── Results/
 │   │   ├── ResultsCardView.swift        # Tip/total/per-person card
 │   │   └── BreakdownRow.swift           # Label-value display row

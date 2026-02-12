@@ -166,11 +166,11 @@ BillBuddy development to-do list, organized by milestone.
 
 ### Phase 1B — Rounding Options
 
-- [ ] `RoundingMode` model — enum with cases: none, roundTip, roundTotal, roundPerPerson; display label computed property
-- [ ] ViewModel integration — add `selectedRoundingMode` property to `CalculatorViewModel`, apply rounding logic to computed outputs, persist via `@AppStorage`
-- [ ] `RoundingSelectorView` — segmented control or chip row for selecting rounding mode, wire into `CalculatorView`
-- [ ] Unit tests — rounding math for each mode, edge cases (zero bill, custom tip with rounding), persistence round-trip
-- [ ] Docs update — add rounding feature to ARCHITECTURE.md, STYLE-GUIDE.md tokens if needed, CHANGELOG.md
+- [x] `RoundingMode` model — enum with cases: none, roundTip, roundTotal, roundPerPerson; display label computed property
+- [x] ViewModel integration — add `selectedRoundingMode` property to `CalculatorViewModel`, apply rounding logic to computed outputs, persist via `@AppStorage`
+- [x] `RoundingSelectorView` — segmented control or chip row for selecting rounding mode, wire into `CalculatorView`
+- [x] Unit tests — rounding math for each mode, edge cases (zero bill, custom tip with rounding), persistence round-trip (11 tests)
+- [x] Docs update — add rounding feature to ARCHITECTURE.md, STYLE-GUIDE.md tokens if needed, CHANGELOG.md
 
 ### Phase 2A — Unequal Splits
 

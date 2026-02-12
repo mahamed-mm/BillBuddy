@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- **Rounding options** — new `RoundingMode` model (none, round tip, round total, round per person) with `RoundingSelectorView` horizontal pill UI, ViewModel integration with `@AppStorage` persistence, and 11 unit tests
 - **New color tokens** — `bbCardBorder` and `bbCardShadow` for fine-grained card surface styling across color schemes
 
 ---
