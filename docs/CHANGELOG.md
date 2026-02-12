@@ -12,6 +12,16 @@ _No unreleased changes._
 
 ---
 
+## [1.0.4] — 2026-02-12
+
+### Added
+
+- **Unit test target** — created `billBudyTests` with shared Xcode scheme, host app dependency, and Swift Testing framework
+- **CalculatorViewModel tests** — 32 tests covering tip math (all presets + custom), split math (1–20 people, bounds clamping), edge cases (empty, zero, invalid, large, decimal), and model properties (TipPreset, Currency)
+- **CurrencyFormatter tests** — 7 tests covering NOK/USD/KES formatting, zero/large amounts, grouping separators, and cross-currency uniqueness
+
+---
+
 ## [1.0.3] — 2026-02-12
 
 ### Removed

@@ -12,7 +12,20 @@ BillBuddy (Xcode project name: `billBudy`) is a native iOS tip-calculator app bu
 xcodebuild -project billBudy.xcodeproj -scheme billBudy -destination 'platform=iOS Simulator,name=iPhone 16' build
 ```
 
-No test targets, linting, or CI are configured yet. See `docs/TESTING.md` for the test strategy and how to add test targets.
+## Test
+
+```bash
+# Run all unit tests (39 tests)
+xcodebuild test -project billBudy.xcodeproj -scheme billBudy -destination 'platform=iOS Simulator,name=iPhone 16'
+
+# Run only CalculatorViewModel tests
+xcodebuild test -project billBudy.xcodeproj -scheme billBudy -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:billBudyTests/CalculatorViewModelTests
+
+# Run only CurrencyFormatter tests
+xcodebuild test -project billBudy.xcodeproj -scheme billBudy -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:billBudyTests/CurrencyFormatterTests
+```
+
+Test target: `billBudyTests` (unit testing bundle, hosted by `billBudy.app`). Uses Swift Testing framework (`@Suite`, `@Test`, `#expect`). See `docs/TESTING.md` for full test strategy and coverage goals.
 
 ## Documentation
 
@@ -30,7 +43,7 @@ All documentation lives in the `docs/` folder (except this file).
 
 ## Architecture
 
-Single-target Xcode project using file-system-synchronized groups (source files auto-discovered). Info.plist is auto-generated. MVVM pattern with a single `CalculatorViewModel` for V1.
+Two-target Xcode project using file-system-synchronized groups (source files auto-discovered). Info.plist is auto-generated. MVVM pattern with a single `CalculatorViewModel` for V1.
 
 **ViewModel injection:** Created with `@State` at the App level, distributed to child views via `.environment()`.
 
@@ -52,6 +65,10 @@ billBudy/
 ├── DesignSystem/              # AppColors, AppTypography, AppSpacing
 ├── Extensions/                # Double+CurrencyFormatted
 └── Assets.xcassets/           # Asset catalog (AccentColor #00E5CC)
+
+billBudyTests/
+├── CalculatorViewModelTests.swift  # Tip math, split math, edge cases, model tests
+└── CurrencyFormatterTests.swift    # NOK/USD/KES formatting tests
 ```
 
 ## Conventions

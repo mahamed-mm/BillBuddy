@@ -135,6 +135,15 @@ BillBuddy development to-do list, organized by milestone.
 
 ---
 
+## V1 Testing
+
+- [x] Create `billBudyTests` unit test target in Xcode project (shared scheme, host app dependency)
+- [x] Write `CalculatorViewModel` unit tests — tip math, split math, edge cases, model tests (32 tests)
+- [x] Write `CurrencyFormatter` unit tests — NOK/USD/KES formatting, zero, large amounts (7 tests)
+- [x] All 39 tests passing
+
+---
+
 ## Milestone 4: Release Prep
 
 - [ ] Run full manual QA checklist (see TESTING.md)

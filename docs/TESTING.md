@@ -6,7 +6,7 @@ BillBuddy's test strategy, coverage goals, and QA checklists.
 
 ## Current State
 
-No test targets are configured yet. Unit and UI test targets will be added as part of V1 development.
+Unit test target `billBudyTests` is configured with 39 passing tests using the Swift Testing framework. UI test target (`billBudyUITests`) is not yet configured.
 
 ---
 
