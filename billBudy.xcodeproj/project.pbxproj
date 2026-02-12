@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		A1B2C3D4E5F6000100000008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D12CF74D2F3D22D900C3E8D3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D12CF7542F3D22D900C3E8D3;
+			remoteInfo = billBudy;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		D12CF7552F3D22D900C3E8D3 /* billBudy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = billBudy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D4E5F6000100000001 /* billBudyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = billBudyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = billBudy;
 			sourceTree = "<group>";
 		};
+		A1B2C3D4E5F6000100000002 /* billBudyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = billBudyTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		D12CF7522F3D22D900C3E8D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D4E5F6000100000004 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				D12CF7572F3D22D900C3E8D3 /* billBudy */,
+				A1B2C3D4E5F6000100000002 /* billBudyTests */,
 				D12CF7562F3D22D900C3E8D3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				D12CF7552F3D22D900C3E8D3 /* billBudy.app */,
+				A1B2C3D4E5F6000100000001 /* billBudyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,27 @@
 			productReference = D12CF7552F3D22D900C3E8D3 /* billBudy.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A1B2C3D4E5F6000100000006 /* billBudyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B2C3D4E5F600010000000B /* Build configuration list for PBXNativeTarget "billBudyTests" */;
+			buildPhases = (
+				A1B2C3D4E5F6000100000003 /* Sources */,
+				A1B2C3D4E5F6000100000004 /* Frameworks */,
+				A1B2C3D4E5F6000100000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A1B2C3D4E5F6000100000007 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A1B2C3D4E5F6000100000002 /* billBudyTests */,
+			);
+			name = billBudyTests;
+			productName = billBudyTests;
+			productReference = A1B2C3D4E5F6000100000001 /* billBudyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +128,10 @@
 				TargetAttributes = {
 					D12CF7542F3D22D900C3E8D3 = {
 						CreatedOnToolsVersion = 26.2;
+					};
+					A1B2C3D4E5F6000100000006 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = D12CF7542F3D22D900C3E8D3;
 					};
 				};
 			};
@@ -100,12 +150,20 @@
 			projectRoot = "";
 			targets = (
 				D12CF7542F3D22D900C3E8D3 /* billBudy */,
+				A1B2C3D4E5F6000100000006 /* billBudyTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		D12CF7532F3D22D900C3E8D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B2C3D4E5F6000100000005 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +180,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1B2C3D4E5F6000100000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1B2C3D4E5F6000100000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D12CF7542F3D22D900C3E8D3 /* billBudy */;
+			targetProxy = A1B2C3D4E5F6000100000008 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		D12CF75E2F3D22DA00C3E8D3 /* Debug */ = {
@@ -310,6 +383,48 @@
 			};
 			name = Release;
 		};
+		A1B2C3D4E5F6000100000009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TWG8JGKXSA;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hurud.billBudyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/billBudy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/billBudy";
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F600010000000A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TWG8JGKXSA;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hurud.billBudyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/billBudy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/billBudy";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -327,6 +442,15 @@
 			buildConfigurations = (
 				D12CF7612F3D22DA00C3E8D3 /* Debug */,
 				D12CF7622F3D22DA00C3E8D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D4E5F600010000000B /* Build configuration list for PBXNativeTarget "billBudyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F6000100000009 /* Debug */,
+				A1B2C3D4E5F600010000000A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
