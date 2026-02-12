@@ -70,7 +70,7 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 2. **ViewModel updates** — the corresponding stored property changes (`billAmountText`, `selectedPreset`, `customTipPercent`, `splitCount`, `selectedCurrency`)
 3. **Computed properties refire** — `@Observable` tracks which properties each view reads; only affected views re-render
 4. **Views display** — `tipAmount`, `totalAmount`, and `perPersonAmount` are shown via `CurrencyFormatter`
-5. **Persistence** — on relevant changes, `savePreferences()` writes to `@AppStorage` (currency, tip preset, split count)
+5. **Persistence** — on relevant changes, `savePreferences()` writes to `@AppStorage` (currency, tip preset, split count, custom tip %)
 
 ---
 
@@ -100,9 +100,10 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 ### Persistence Bridge
 
 ```swift
-@ObservationIgnored @AppStorage("savedCurrency") private var savedCurrency: String = "nok"
-@ObservationIgnored @AppStorage("savedTip")      private var savedTip: Int = 3        // TipPreset rawValue
-@ObservationIgnored @AppStorage("savedSplit")     private var savedSplit: Int = 1
+@ObservationIgnored @AppStorage("savedCurrency")  private var savedCurrency: String = "nok"
+@ObservationIgnored @AppStorage("savedTip")        private var savedTip: Int = 3        // TipPreset rawValue
+@ObservationIgnored @AppStorage("savedSplit")       private var savedSplit: Int = 1
+@ObservationIgnored @AppStorage("savedCustomTip")  private var savedCustomTip: Double = 18.0
 ```
 
 - **Load:** `init()` reads `@AppStorage` values and sets corresponding `@Observable` properties

@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Fixed
+
+- **Haptic feedback on first calculation** — wired `HapticManager.success()` in `ResultsCardView` via `.onChange` guard so it fires once when bill amount first becomes positive
+- **Keyboard dismiss** — added toolbar with Done button to `BillInputView` so users can close the decimal pad
+- **Custom tip persistence** — added `@AppStorage("savedCustomTip")` to `CalculatorViewModel` and trigger `savePreferences()` on slider change in `TipSelectorView`
 
 ---
 

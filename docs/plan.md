@@ -77,7 +77,8 @@ Display formatting only — no live conversion in V1.
 | Key              | Persisted? |
 |------------------|------------|
 | Currency         | Yes        |
-| Tip percentage   | Yes        |
+| Tip preset       | Yes        |
+| Custom tip %     | Yes        |
 | Split count      | Yes        |
 | Bill amount      | **No**     |
 
