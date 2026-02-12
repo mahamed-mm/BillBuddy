@@ -35,6 +35,9 @@ struct TipSelectorView: View {
                 VStack(spacing: AppSpacing.xs) {
                     Slider(value: $viewModel.customTipPercent, in: 0...50, step: 1)
                         .tint(AppColors.bbTeal)
+                        .onChange(of: viewModel.customTipPercent) {
+                            viewModel.savePreferences()
+                        }
 
                     Text("\(Int(viewModel.customTipPercent))%")
                         .font(AppTypography.body)

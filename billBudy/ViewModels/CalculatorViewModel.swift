@@ -13,6 +13,7 @@ final class CalculatorViewModel {
     @ObservationIgnored @AppStorage("savedCurrency") private var savedCurrency: String = "nok"
     @ObservationIgnored @AppStorage("savedTip") private var savedTip: Int = 3
     @ObservationIgnored @AppStorage("savedSplit") private var savedSplit: Int = 1
+    @ObservationIgnored @AppStorage("savedCustomTip") private var savedCustomTip: Double = 18.0
 
     // MARK: - Computed Properties
     var billAmount: Double { Double(billAmountText) ?? 0.0 }
@@ -40,6 +41,7 @@ final class CalculatorViewModel {
             selectedPreset = preset
         }
         splitCount = savedSplit
+        customTipPercent = savedCustomTip
     }
 
     // MARK: - Methods
@@ -61,5 +63,6 @@ final class CalculatorViewModel {
         savedCurrency = selectedCurrency.rawValue
         savedTip = selectedPreset.rawValue
         savedSplit = splitCount
+        savedCustomTip = customTipPercent
     }
 }
