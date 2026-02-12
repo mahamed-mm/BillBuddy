@@ -8,7 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Improved
+
+- **Adaptive dark-mode color system** — all `AppColors` tokens now use `Color(UIColor { traits in ... })` with explicit dark/light variants: deep off-black background (`#0A0A0F`), elevated card surface (`#1C1C1E`), tuned chip and border opacities per mode
+- **GlassCard enhancement** — added subtle `bbCardBorder` glass-edge overlay (white @ 8% dark, black @ 4% light) and adaptive `bbCardShadow` (deeper in dark mode for perceived elevation)
+
+### Added
+
+- **New color tokens** — `bbCardBorder` and `bbCardShadow` for fine-grained card surface styling across color schemes
 
 ---
 

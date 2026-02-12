@@ -8,7 +8,11 @@ struct GlassCard<Content: View>: View {
             .padding(AppSpacing.md)
             .background(AppColors.bbCardBackground)
             .clipShape(RoundedRectangle(cornerRadius: AppSpacing.cardRadius))
-            .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppSpacing.cardRadius)
+                    .stroke(AppColors.bbCardBorder, lineWidth: 1)
+            )
+            .shadow(color: AppColors.bbCardShadow, radius: 10, y: 5)
     }
 }
 

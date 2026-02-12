@@ -15,6 +15,7 @@ struct billBudyApp: App {
         WindowGroup {
             ContentView()
                 .environment(viewModel)
+                .preferredColorScheme(.dark)
         }
     }
 }

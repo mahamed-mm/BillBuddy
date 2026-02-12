@@ -18,16 +18,20 @@ BillBuddy's visual design system. All values are defined in the `DesignSystem/` 
 
 Defined in `DesignSystem/AppColors.swift`. Access via `AppColors.bbTeal`, `AppColors.bbCardBackground`, etc.
 
-| Token               | Light Mode              | Dark Mode               | Usage |
-|----------------------|-------------------------|-------------------------|-------|
-| `bbTeal`             | `#00E5CC`               | `#00E5CC`               | Accent color — selected states, borders, highlights |
-| `bbBackground`       | `.background`           | `.background`           | Screen background |
-| `bbCardBackground`   | `Color(.systemGray6)`   | `Color(.systemGray6)`   | Card and surface fills |
-| `bbPrimaryText`      | `.primary`              | `.primary`              | Main text — amounts, labels, headings |
-| `bbSecondaryText`    | `.secondary`            | `.secondary`            | Supporting text — descriptions, captions |
-| `bbSelectedChip`     | `bbTeal.opacity(0.15)`  | `bbTeal.opacity(0.15)`  | Background fill for selected tip preset chips |
-| `bbSelectedBorder`   | `bbTeal`                | `bbTeal`                | Border for selected tip preset chips |
-| `bbUnselectedBorder` | `Color(.systemGray4)`   | `Color(.systemGray4)`   | Border for unselected tip preset chips |
+All adaptive colors use `Color(UIColor { traits in ... })` with explicit dark/light variants.
+
+| Token               | Light Mode                    | Dark Mode                      | Usage |
+|----------------------|-------------------------------|--------------------------------|-------|
+| `bbTeal`             | `#00E5CC`                     | `#00E5CC`                      | Accent color — selected states, borders, highlights |
+| `bbBackground`       | `#F2F2F7`                     | `#0A0A0F`                      | Screen background (warm off-white / deep dark) |
+| `bbCardBackground`   | `#FFFFFF`                     | `#1C1C1E`                      | Card and surface fills (white / elevated dark) |
+| `bbPrimaryText`      | `.primary`                    | `.primary`                     | Main text — amounts, labels, headings |
+| `bbSecondaryText`    | `.secondary`                  | `.secondary`                   | Supporting text — descriptions, captions |
+| `bbSelectedChip`     | `bbTeal` @ 10% opacity        | `bbTeal` @ 15% opacity         | Background fill for selected tip preset chips |
+| `bbSelectedBorder`   | `bbTeal`                      | `bbTeal`                       | Border for selected tip preset chips |
+| `bbUnselectedBorder` | `systemGray4` (`#D1D1D6`)     | `systemGray3` (`#3A3A3C`)      | Border for unselected tip preset chips |
+| `bbCardBorder`       | `black` @ 4% opacity          | `white` @ 8% opacity           | Subtle glass-edge border on cards |
+| `bbCardShadow`       | `black` @ 8% opacity          | `black` @ 40% opacity          | Card shadow (soft light / deep dark elevation) |
 
 ### Color Usage Rules
 
@@ -141,10 +145,11 @@ Result card rows animate in with incremental delay:
 
 ### GlassCard
 
-- Background: `AppColors.bbCardBackground`
+- Background: `AppColors.bbCardBackground` (white in light, `#1C1C1E` in dark)
 - Corner radius: `AppSpacing.cardRadius` (20pt)
 - Internal padding: `AppSpacing.md` (16pt)
-- Shadow: subtle, low opacity
+- Border: 1pt `AppColors.bbCardBorder` (subtle glass edge — white @ 8% in dark, black @ 4% in light)
+- Shadow: `AppColors.bbCardShadow`, radius 10, y-offset 5 (deeper in dark mode for elevation)
 - Used for: results card, and potentially future card surfaces
 
 ### TipPresetButton States

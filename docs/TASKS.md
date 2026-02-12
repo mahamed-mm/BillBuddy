@@ -157,33 +157,80 @@ BillBuddy development to-do list, organized by milestone.
 
 ## V2 — Power Features
 
-### Dark-Mode UI
+### Phase 1A — Dark-Mode UI
 
-- [ ] Implement full dark-mode color scheme — dark backgrounds, elevated card surfaces, teal accent visibility
-- [ ] Update `AppColors` with dark-mode-specific adaptive colors using `Color(.init(dynamicProvider:))`
-- [ ] QA all views in dark mode — text readability, contrast ratios, card elevation
-- [ ] Add dark-mode screenshots to README
+- [x] Build adaptive color system — update `AppColors` with dark/light variants using `Color(.init(dynamicProvider:))` for all tokens
+- [x] Enhance `GlassCard` — add elevated surface material, subtle border, shadow adjustments for dark mode
+- [x] View-by-view QA — verify text readability, contrast ratios, card elevation, and teal accent visibility in both modes on multiple simulators
+- [x] Docs update — add dark-mode screenshots to README, update STYLE-GUIDE.md with adaptive color table, note in CHANGELOG.md
 
-### Unequal Splits
+### Phase 1B — Rounding Options
 
-- [ ] Assign custom amounts/percentages per person
+- [ ] `RoundingMode` model — enum with cases: none, roundTip, roundTotal, roundPerPerson; display label computed property
+- [ ] ViewModel integration — add `selectedRoundingMode` property to `CalculatorViewModel`, apply rounding logic to computed outputs, persist via `@AppStorage`
+- [ ] `RoundingSelectorView` — segmented control or chip row for selecting rounding mode, wire into `CalculatorView`
+- [ ] Unit tests — rounding math for each mode, edge cases (zero bill, custom tip with rounding), persistence round-trip
+- [ ] Docs update — add rounding feature to ARCHITECTURE.md, STYLE-GUIDE.md tokens if needed, CHANGELOG.md
 
-### Live Currency Conversion
+### Phase 2A — Unequal Splits
 
-- [ ] API-backed real-time exchange rates
+- [ ] `SplitMode` model — enum with cases: equal, custom; display label property
+- [ ] `PersonSplit` model — struct with personIndex, name (optional), customAmount or percentage
+- [ ] ViewModel extensions — add `splitMode`, `personSplits` array, computed per-person breakdowns, validation (splits sum to total)
+- [ ] `SplitModeToggle` — toggle/segmented control to switch between equal and custom split modes
+- [ ] `PersonSplitRow` — editable row per person showing name, amount field, percentage, with inline validation
+- [ ] Update `SplitControlView` — conditionally show equal stepper or custom split list based on `splitMode`
+- [ ] Update `ResultsCardView` — show per-person breakdown table when custom splits are active
+- [ ] Unit tests — equal vs custom splits, validation (over/under allocation), edge cases (1 person custom, max persons)
+- [ ] Docs update — add split models to ARCHITECTURE.md, update TASKS.md progress, CHANGELOG.md
 
-### VisionKit Receipt Scanner
+### Phase 2B — Live Currency Conversion
 
-- [ ] OCR to extract bill total from photos
+- [ ] `ExchangeRate` model — struct with baseCurrency, targetCurrency, rate, fetchedAt timestamp
+- [ ] `ExchangeRateService` — async service to fetch rates from a free API, caching layer, error handling, rate-limit awareness
+- [ ] ViewModel integration — add `convertedAmount` computed property, `refreshRates()` action, loading/error states, auto-refresh interval
+- [ ] `ConversionBannerView` — inline banner below results showing converted amount, last-updated timestamp, refresh button
+- [ ] Update `CurrencyPickerView` — show live rate hint next to each currency option when rates are available
+- [ ] Unit tests — rate fetching mock, conversion math, cache expiry, error states, offline fallback
+- [ ] Docs update — add service layer to ARCHITECTURE.md, document API key setup if needed, CHANGELOG.md
 
-### SwiftData Bill History
+### Phase 2C — SwiftData History
 
-- [ ] Saved calculations with search/filter
+- [ ] `SavedCalculation` model — `@Model` class with billAmount, tipPercent, splitCount, currency, tipAmount, totalAmount, perPersonAmount, date, optional note
+- [ ] ModelContainer setup — configure `ModelContainer` in `billBudyApp.swift`, inject into environment
+- [ ] `HistoryViewModel` — `@Observable` class with fetch, delete, search/filter logic using `@Query` or manual predicates
+- [ ] Save action — add "Save" button to `ResultsCardView`, create `SavedCalculation` from current state, success haptic
+- [ ] `HistoryListView` — list of saved calculations with date, amount, currency, swipe-to-delete
+- [ ] `HistoryDetailView` — full breakdown of a saved calculation, option to restore values to calculator
+- [ ] Navigation setup — add tab bar or navigation link from `ContentView` to history, deep-link support
+- [ ] Unit tests — save/fetch/delete operations, search filtering, model encoding, edge cases (empty history)
+- [ ] Docs update — add SwiftData layer to ARCHITECTURE.md, update folder structure, CHANGELOG.md
 
-### Rounding Options
+### Phase 3A — Receipt Scanner
 
-- [ ] Round tip, total, or per-person to nearest unit
+- [ ] Camera permission — add `NSCameraUsageDescription` to Info.plist, handle permission request flow and denied state
+- [ ] `ReceiptScannerService` — VisionKit `DataScannerViewController` wrapper, text recognition to extract bill total, confidence scoring
+- [ ] `ScannerSheetView` — sheet presenting camera scanner, overlay with guidance text, cancel/confirm actions
+- [ ] `BillInputView` integration — add camera icon button, present scanner sheet, populate bill amount from scan result
+- [ ] Error handling — no text found, low confidence, camera unavailable, permission denied states with user-friendly messages
+- [ ] Unit tests — text extraction parsing logic, amount pattern matching, edge cases (multiple amounts, foreign formats)
+- [ ] Docs update — add VisionKit integration to ARCHITECTURE.md, document permissions, CHANGELOG.md
 
-### WidgetKit Home Screen Widget
+### Phase 3B — WidgetKit
 
-- [ ] Quick-access recent calculation
+- [ ] Widget target — add `billBudyWidget` extension target to Xcode project, configure shared app group for data access
+- [ ] Timeline provider — `TimelineProvider` returning latest saved calculation or placeholder, refresh policy
+- [ ] Widget views — small and medium widget families showing last calculation summary (amount, tip, total, currency)
+- [ ] Configuration — `AppIntentConfiguration` for user to select which currency or calculation to display
+- [ ] Deep link — tapping widget opens app to calculator or history detail, URL scheme handling in `billBudyApp.swift`
+- [ ] Docs update — add widget target to ARCHITECTURE.md folder structure, document app group setup, CHANGELOG.md
+
+### Phase 4 — Integration & Release
+
+- [ ] Standards audit — verify all new code follows STYLE-GUIDE.md tokens, naming conventions, Swift style rules from CLAUDE.md
+- [ ] Cross-feature tests — test interactions between features (e.g., rounding + unequal splits, scanner + currency conversion, save + history)
+- [ ] Edge cases — stress-test with extreme values, rapid feature switching, offline mode, low memory, backgrounding mid-scan
+- [ ] Test coverage — ensure all new ViewModels and Services have unit tests, target 80%+ line coverage across new code
+- [ ] Docs sweep — update all docs (ARCHITECTURE.md, STYLE-GUIDE.md, TESTING.md, TASKS.md, README.md) to reflect V2 features
+- [ ] CHANGELOG v2.0.0 — move all [Unreleased] items to [2.0.0] section with date, summarize all phases
+- [ ] Tag release — `git tag v2.0.0` after all checks pass
