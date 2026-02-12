@@ -36,6 +36,8 @@ struct ResultsCardView: View {
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.billAmountText)
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.effectiveTipPercent)
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.splitCount)
         .onAppear {
             isVisible = true
         }

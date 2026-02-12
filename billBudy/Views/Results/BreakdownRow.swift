@@ -15,6 +15,7 @@ struct BreakdownRow: View {
             Text(value)
                 .font(AppTypography.mono)
                 .foregroundStyle(AppColors.bbPrimaryText)
+                .contentTransition(.numericText())
         }
     }
 }
