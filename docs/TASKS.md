@@ -112,6 +112,14 @@ BillBuddy development to-do list, organized by milestone.
 
 ---
 
+## V1 Bug Fixes
+
+- [x] Wire HapticManager.success() in ResultsCardView on first calculation
+- [x] Add keyboard dismiss toolbar with Done button to BillInputView
+- [x] Save customTipPercent via savePreferences() when slider changes
+
+---
+
 ## Milestone 4: Release Prep
 
 - [ ] Run full manual QA checklist (see TESTING.md)
