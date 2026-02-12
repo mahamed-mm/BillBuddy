@@ -17,6 +17,8 @@ struct BillInputView: View {
                 .foregroundStyle(AppColors.bbPrimaryText)
                 .keyboardType(.decimalPad)
                 .focused($isFieldFocused)
+                .accessibilityLabel("Bill amount")
+                .accessibilityValue(viewModel.billAmountText.isEmpty ? "Empty" : "\(viewModel.billAmountText) \(viewModel.selectedCurrency.rawValue.uppercased())")
                 .toolbar {
                     ToolbarItemGroup(placement: .keyboard) {
                         Spacer()

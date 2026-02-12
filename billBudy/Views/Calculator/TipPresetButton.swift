@@ -24,6 +24,8 @@ struct TipPresetButton: View {
                 .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSelected)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(preset.displayText) tip")
+        .accessibilityValue(isSelected ? "Selected" : "Not selected")
     }
 }
 

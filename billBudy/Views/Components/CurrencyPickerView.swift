@@ -14,6 +14,8 @@ struct CurrencyPickerView: View {
         }
         .pickerStyle(.segmented)
         .tint(AppColors.bbTeal)
+        .accessibilityLabel("Currency selector")
+        .accessibilityValue(viewModel.selectedCurrency.rawValue.uppercased())
         .onChange(of: viewModel.selectedCurrency) {
             viewModel.savePreferences()
         }

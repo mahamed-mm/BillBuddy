@@ -19,6 +19,8 @@ struct SplitControlView: View {
                         .foregroundStyle(viewModel.splitCount <= 1 ? AppColors.bbSecondaryText : AppColors.bbTeal)
                 }
                 .disabled(viewModel.splitCount <= 1)
+                .accessibilityLabel("Decrease split")
+                .accessibilityValue("\(viewModel.splitCount) people")
 
                 Text("\(viewModel.splitCount)")
                     .font(AppTypography.title)
@@ -36,6 +38,8 @@ struct SplitControlView: View {
                         .foregroundStyle(viewModel.splitCount >= 20 ? AppColors.bbSecondaryText : AppColors.bbTeal)
                 }
                 .disabled(viewModel.splitCount >= 20)
+                .accessibilityLabel("Increase split")
+                .accessibilityValue("\(viewModel.splitCount) people")
             }
             .buttonStyle(.plain)
         }
