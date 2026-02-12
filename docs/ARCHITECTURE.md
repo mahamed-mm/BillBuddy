@@ -37,7 +37,6 @@ billBudy/
 │   ├── AppTypography.swift              # Font presets (largeTitle, title, headline, etc.)
 │   └── AppSpacing.swift                 # Spacing scale (xs–xxl) + corner radii
 ├── Extensions/
-│   ├── View+HapticFeedback.swift        # .onHaptic() modifier
 │   └── Double+CurrencyFormatted.swift   # .formatted(as:) helper
 └── Assets.xcassets/
     └── AccentColor.colorset/            # Teal #00E5CC

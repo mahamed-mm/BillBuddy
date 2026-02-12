@@ -12,6 +12,18 @@ _No unreleased changes._
 
 ---
 
+## [1.0.3] — 2026-02-12
+
+### Removed
+
+- **Unused haptic extension methods** — removed `onLightHaptic()`, `onMediumHaptic()`, and `withHapticFeedback()` from `View+HapticFeedback.swift` (never called; all haptics go through `HapticManager` directly)
+
+### Improved
+
+- **VoiceOver accessibility** — added `accessibilityLabel` and `accessibilityValue` to `BillInputView`, `TipPresetButton`, `SplitControlView`, `CurrencyPickerView`, and `ResultsCardView`
+
+---
+
 ## [1.0.2] — 2026-02-12
 
 ### Improved

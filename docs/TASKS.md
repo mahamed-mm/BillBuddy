@@ -128,6 +128,13 @@ BillBuddy development to-do list, organized by milestone.
 
 ---
 
+## V1 Code Quality
+
+- [x] Remove unused `View+HapticFeedback` extension methods (`onLightHaptic`, `onMediumHaptic`, `withHapticFeedback`)
+- [x] Add `accessibilityLabel` and `accessibilityValue` to all interactive controls (BillInputView, TipPresetButton, SplitControlView, CurrencyPickerView, ResultsCardView)
+
+---
+
 ## Milestone 4: Release Prep
 
 - [ ] Run full manual QA checklist (see TESTING.md)

@@ -50,7 +50,7 @@ billBudy/
 │   └── Components/            # Reusable components (CurrencyPicker, GlassCard)
 ├── Services/                  # HapticManager, CurrencyFormatter (enum namespaces)
 ├── DesignSystem/              # AppColors, AppTypography, AppSpacing
-├── Extensions/                # View+HapticFeedback, Double+CurrencyFormatted
+├── Extensions/                # Double+CurrencyFormatted
 └── Assets.xcassets/           # Asset catalog (AccentColor #00E5CC)
 ```
 
