@@ -3,6 +3,7 @@ import SwiftUI
 struct ResultsCardView: View {
     @Environment(CalculatorViewModel.self) private var viewModel
     @State private var isVisible = false
+    @State private var hasTriggeredHaptic = false
 
     private var rows: [(label: String, value: String)] {
         var result = [
@@ -37,6 +38,12 @@ struct ResultsCardView: View {
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: viewModel.billAmountText)
         .onAppear {
             isVisible = true
+        }
+        .onChange(of: viewModel.billAmount) { _, newValue in
+            if newValue > 0 && !hasTriggeredHaptic {
+                hasTriggeredHaptic = true
+                HapticManager.success()
+            }
         }
     }
 }
