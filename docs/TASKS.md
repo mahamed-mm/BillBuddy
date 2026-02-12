@@ -120,6 +120,14 @@ BillBuddy development to-do list, organized by milestone.
 
 ---
 
+## V1 UX Polish
+
+- [x] Add `.contentTransition(.numericText())` to tip, total, and per-person values in BreakdownRow
+- [x] Animate ResultsCardView on currency change (spring animation on selectedCurrency)
+- [ ] Test dark/light mode on multiple simulators — deferred to V2 Dark-Mode UI
+
+---
+
 ## Milestone 4: Release Prep
 
 - [ ] Run full manual QA checklist (see TESTING.md)
