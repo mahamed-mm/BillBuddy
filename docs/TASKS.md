@@ -199,7 +199,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. 16 tasks, ~27
 
 #### Tasks
 
-- [ ] **2A-0** Design spec `docs/design/2A-unequal-splits.md` (ui-designer → design-reviewer Mode A) (~3h) · deps: — (Q1–Q9 decided)
+- [x] **2A-0** Design spec `docs/design/2A-unequal-splits.md` (ui-designer → design-reviewer Mode A) (~3h) · deps: — (Q1–Q9 decided) · 1ed3806, Mode A APPROVED in round 2 (round 1: [B1]–[B3] AX-size layout)
   - AC: design-reviewer returns APPROVED (Mode A) within 3 rounds
   - AC: specifies the split-mode control, `PersonSplitRow`, a left/over/balanced indicator that uses text + icon (never color alone), and the results-card breakdown, including the invalid state (no per-person amounts, Q6) and the Per Person ↑ surplus line (Q5)
   - AC: specifies the custom-mode rows (Q7): the prefilled equal split and its text format, what a row added by + contains, and whether untouched prefilled rows follow bill or count changes, including a switch to Custom before a bill is typed
@@ -296,6 +296,13 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. 16 tasks, ~27
 - [2A-1 N3] The scale path in `AmountParser.minorUnits` is untested, because every currency uses 2. Add an internal `minorUnits(from:fractionDigits:)` seam and test it at 0 and 3 (`",5"`@0 → 1, `"1,0005"`@3 → 1001).
 - [2A-1 N4] TESTING.md still says 39 tests (61 now) and has no AmountParser section. Its manual QA lacks a "type 12,50 with Region = Norway" step, which should be checked before tagging 2.0.1 (the rest is covered by 2A-14). CLAUDE.md also says 39 (human-owned).
 - [2A-1 N6] `AmountParser` is stateless, so it could be `nonisolated` if a caller off the main actor ever appears.
+- [2A-0 N11–N15] Non-blocking notes from the Mode A round-2 approval, to fold into the task ACs:
+  - N11 (2A-10): put the clear (ⓧ) button's min-frame and `.contentShape(Rectangle())` inside its label, so the whole 44 pt slot is tappable.
+  - N12 (2A-6, 2A-10): an automatic row is one whose text is empty after trimming whitespace.
+  - N13 (2A-12): in landscape from about AX3, the "Person N" label can scroll out above the focused field. State it, or show the person number inside the field box.
+  - N14 (token finalization): add an exception to STYLE-GUIDE's "`bbPrimaryText` for all amounts" rule for automatic previews in `bbSecondaryText`.
+  - N15 (2A-11): post status announcements with `accessibilitySpeechAnnouncementPriority = .low`.
+- Decision (2026-09-25): the human approved the spec's automatic-rows model, which replaces Q7's prefilled amounts. On the Q6 reading, Tip and Total stay visible while the rows don't add up.
 
 ### Phase 2B — Live Currency Conversion
 
