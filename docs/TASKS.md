@@ -172,105 +172,125 @@ BillBuddy development to-do list, organized by milestone.
 - [x] Unit tests — rounding math for each mode, edge cases (zero bill, custom tip with rounding), persistence round-trip (11 tests)
 - [x] Docs update — add rounding feature to ARCHITECTURE.md, STYLE-GUIDE.md tokens if needed, CHANGELOG.md
 
+### V2 Bug Fixes
+
+- [ ] **BF-1** Currency picker flags and rounding-row clipping on iOS 26 (reported 2026-09-25 from a simulator screenshot) · deps: —
+  - AC: every currency option shows a rendered flag and its full code (NOK, USD, KES), with no "?" boxes or truncation, at the default text size and AX5, in light and dark mode. Keep the native segmented control if the flags render in it; otherwise use a chip row with flags (product decision)
+  - AC: no rounding pill is clipped at the content-padding edge, and all 4 are reachable at AX5
+  - AC: currency selection, persistence, haptics, VoiceOver selection state, and tokens only as before; code review plus design review Mode B, with before/after screenshots
+
 ### Phase 2A — Unequal Splits
 
-Planned 2026-09-25 by v2-planner: 15 tasks, ~25h (design ~3h, dev ~22h). Critical path: 2A-1, 2A-2, 2A-4 → 2A-5 → 2A-6 → 2A-7 → 2A-8 → 2A-13 → 2A-14. Design (2A-0) runs alongside the logic tasks. `‖` = parallel-safe: no open dependencies, so the task can go in any order and overlap with design work (still one ios-developer task at a time).
+Planned 2026-09-25 by v2-planner; decisions recorded the same day. 16 tasks, ~27h (design ~3h, dev ~24h). Critical path: 2A-1, 2A-2, 2A-4 → 2A-5 → 2A-6 → 2A-7 → 2A-8 → 2A-13 → 2A-14. Design (2A-0) runs alongside 2A-2 to 2A-5 and must be APPROVED before 2A-6, which implements the spec's row behavior. 2A-15 (iOS 17.0 target) must land before the first UI task, 2A-9. `‖` = parallel-safe: no open dependencies, so the task can go in any order and overlap with design work (still one ios-developer task at a time).
 
-**Exit criteria:** every task ticked with code review APPROVED (plus design review Mode B for UI tasks) · build with 0 warnings · the 50 pre-2A tests pass with unchanged expectations · custom shares sum exactly (Int minor units) to the displayed total for 1–20 people under None, Tip ↑, and Total ↑, and the Per Person ↑ surplus is shown (pending Q5) · comma and point decimals work in the bill and custom fields · equal mode behaves as before.
+**Exit criteria:** every task ticked with code review APPROVED (plus design review Mode B for UI tasks) · deployment target iOS 17.0 and a build with 0 warnings · the 50 pre-2A tests pass with unchanged expectations · switching to Custom starts balanced from the equal-split prefill · custom shares sum exactly (Int minor units) to the displayed total for 1–20 people under None, Tip ↑, and Total ↑, and Per Person ↑ shows the surplus as its own line · comma and point decimals work in the bill and custom fields · equal mode behaves as before.
 
-#### Open decisions
+#### Decisions (2026-09-25)
 
-Tasks are planned with the recommended option below. An AC tagged "(pending Q#)" changes if the human decides otherwise. The options and trade-offs are in the planner's report to the PM.
-
-- **Q1** Custom input: amounts only; percentages deferred
-- **Q2** Tip: custom amounts are pre-tip bill portions that must sum to the bill; tip and rounding are split in proportion
-- **Q3** People: labeled "Person 1…N", no names
-- **Q4** Persistence: none; the app launches in equal mode and amounts last for the session only
-- **Q5** Rounding: Tip ↑ and Total ↑ split the rounded total in proportion; Per Person ↑ rounds each share up to a whole unit and shows the surplus
-- **Q6** Invalid split: no per-person amounts until balanced; show the amount left or over
-- **Q7** Edits: keep typed amounts and re-validate; the stepper adds or removes the last row; mode and currency switches keep amounts
-- **Q8** Parsing fix: ships in 2A as 2A-1, accepts "," and "." on any region, and is also cherry-picked to `main` as 2.0.1
-- **Q9** Deployment target: the project is set to iOS 26.2 while the docs say 17+; lower it to 17.0 before 2A-9
+- **Q1** Custom input is amounts only; percentages are deferred.
+- **Q2** Custom amounts are pre-tip bill portions that must add up to the bill. Tip and rounding are split in proportion.
+- **Q3** People are labeled "Person 1…N", with no names.
+- **Q4** Nothing persists: the app launches in equal mode, and amounts last for the session only.
+- **Q5** Tip ↑ and Total ↑ split the rounded total in proportion. Per Person ↑ rounds each custom share up to a whole unit and shows the surplus as its own line.
+- **Q6** While the split is invalid, no per-person amounts are shown; only a left/over status with text + icon.
+- **Q7** (refined) Switching to Custom starts from the equal split: rows are prefilled with equal portions of the bill that add up exactly to it, with any leftover øre/cent going to the lowest-numbered people (the `ShareAllocator` tie rule). Typed amounts are kept for the session and rechecked live. Mode, currency, tip, and rounding switches keep them. + adds a row and − removes the last. The spec (2A-0) sets what a newly added row contains and whether untouched prefilled rows follow bill or count changes.
+- **Q8** Yes: 2A-1 also ships early as hotfix 2.0.1, cherry-picked onto `main`. The PM handles the release mechanics and asks the human before pushing.
+- **Q9** Lower the deployment target to iOS 17.0 (the project is set to 26.2; the docs say 17+). Done in 2A-15, before the first UI task.
 
 #### Tasks
 
-- [ ] **2A-0** Design spec `docs/design/2A-unequal-splits.md` (ui-designer → design-reviewer Mode A) (~3h) · deps: answers to Q1–Q3 and Q5–Q7 (Mobbin research can start now)
+- [ ] **2A-0** Design spec `docs/design/2A-unequal-splits.md` (ui-designer → design-reviewer Mode A) (~3h) · deps: — (Q1–Q9 decided)
   - AC: design-reviewer returns APPROVED (Mode A) within 3 rounds
-  - AC: specifies the split-mode control, `PersonSplitRow`, a left/over/balanced indicator that uses text + icon (never color alone), and the results-card breakdown, including the invalid state (pending Q6) and the Per Person ↑ surplus (pending Q5)
-  - AC: specifies stepper behavior in custom mode (pending Q7), the 1-person case, the keyboard flow across the bill and person fields (one Done, Next/Previous), the AX5 row layout, a VoiceOver label and value per control, and Reduce Motion
-  - AC: lists new tokens (for example a warning color) with light and dark values, or states "none"; uses only iOS 17 APIs (pending Q9)
+  - AC: specifies the split-mode control, `PersonSplitRow`, a left/over/balanced indicator that uses text + icon (never color alone), and the results-card breakdown, including the invalid state (no per-person amounts, Q6) and the Per Person ↑ surplus line (Q5)
+  - AC: specifies the custom-mode rows (Q7): the prefilled equal split and its text format, what a row added by + contains, and whether untouched prefilled rows follow bill or count changes, including a switch to Custom before a bill is typed
+  - AC: specifies the 1-person case, the keyboard flow across the bill and person fields (one Done, Next/Previous), the AX5 row layout, a VoiceOver label and value per control, and Reduce Motion
+  - AC: lists new tokens (for example a warning color) with light and dark values, or states "none"; uses only iOS 17 APIs
 - [ ] **2A-1** `AmountParser`: locale-tolerant amount parsing that fixes comma-decimal bill input (~1.5h) · deps: — · ‖
   - AC: pure `enum AmountParser` in `Services/`, tested in a new `AmountParserTests.swift`
-  - AC: `"12,50"` and `"12.50"` → 12.5; `"12"`, `"12,"`, `"12."` → 12; `",5"` → 0.5 (pending Q8)
+  - AC: `"12,50"` and `"12.50"` → 12.5; `"12"`, `"12,"`, `"12."` → 12; `",5"` → 0.5
   - AC: `""`, `"abc"`, `"12abc"`, `"1,2,3"`, `"1.234,50"`, `"-5"`, `"nan"`, `"inf"`, `"1e5"` → nil (today `Double(_:)` accepts the last four)
   - AC: minor units come straight from the text with no `Double` step: `"12,50"` → 1250, `"0.29"` → 29, `"1.005"` → 101 (half-up)
   - AC: `billAmount` uses the parser (`billAmountText = "12,50"` → `billAmount == 12.5`); the 50 existing tests pass unchanged
-  - AC: one self-contained commit (parser, `billAmount`, tests, CHANGELOG "Fixed") that cherry-picks cleanly onto `main` (pending Q8)
+  - AC: one self-contained commit (parser, `billAmount`, tests, CHANGELOG "Fixed") that cherry-picks cleanly onto `main` for hotfix 2.0.1 (Q8)
 - [ ] **2A-2** Test isolation: injectable `UserDefaults` for `CalculatorViewModel` (~1h) · deps: — · ‖
   - AC: `init(defaults: UserDefaults = .standard)`; all 5 persisted preferences read and write that store; app and preview behavior unchanged
-  - AC: tests get a fresh `UserDefaults(suiteName:)` per ViewModel through one shared helper; `grep -rn "CalculatorViewModel()" billBudyTests` → 0 matches
+  - AC: tests get a fresh `UserDefaults(suiteName:)` per ViewModel through one shared helper, including the 3 calls in the `BillParsingTests` suite that 2A-1 added (`billBudyTests/AmountParserTests.swift`); `grep -rn "CalculatorViewModel()" billBudyTests` → 0 matches (36 today)
   - AC: new round-trip test: set currency, tip, custom %, split, and rounding → `savePreferences()` → a new ViewModel on the same suite restores all 5
   - AC: the suite passes with `savedRounding = 2` (Total ↑) pre-seeded in the simulator app's standard defaults (by inspection, `EdgeCaseTests.veryLargeBill` fails in that state today)
 - [ ] **2A-3** Split models: `SplitMode`, `PersonSplit`, `PersonShare` (~1h) · deps: — · ‖
   - AC: `SplitMode: Int, CaseIterable, Identifiable` with `.equal` = 0 and `.custom` = 1; `displayText` "Equal" / "Custom" (mirrors `RoundingMode`)
-  - AC: `PersonSplit` (input) is `Identifiable` with a stable `id` (not the array index), a 1-based person number, and `amountText` (pending Q1); `label` == "Person N" (pending Q3)
+  - AC: `PersonSplit` (input) is `Identifiable` with a stable `id` (not the array index), a 1-based person number, and `amountText`; `label` == "Person N"
+  - AC: `PersonSplit.isEdited` (default false, true once the user types in the row) lets 2A-6 tell untouched prefilled rows from typed ones (Q7); 2A-6 removes it if the approved spec never uses it
   - AC: `PersonShare` (output) holds the person number, bill portion, and share as Int minor units, plus `Double` accessors for display
-  - AC: tests in a new `SplitModelTests.swift` cover case count, raw values, display text, and labels
+  - AC: tests in a new `SplitModelTests.swift` cover case count, raw values, display text, labels, and a new `PersonSplit` starting unedited
 - [ ] **2A-4** `ShareAllocator`: exact largest-remainder allocation in minor units (~2h) · deps: — · ‖
-  - AC: pure `enum ShareAllocator` in `Services/`, Int minor units in and out; the minor-unit scale has one source (for example `Currency.fractionDigits`, 2 for NOK, USD, and KES)
+  - AC: pure `enum ShareAllocator` in `Services/`, Int minor units in and out; the minor-unit scale comes from `Currency.fractionDigits` (added by 2A-1; 2 for NOK, USD, and KES)
   - AC: parameterized test over n = 1…20 × totals {0, 1, 99, 100, 101, 11_500, 99_999_999}: `sum == total` exactly (Int equality, no tolerance), every share ≥ 0, count == n; with equal weights, max − min ≤ 1
-  - AC: `allocate(10_000, [1, 1, 1]) == [3334, 3333, 3333]`; leftover units go to the largest remainders, ties to the lowest index
+  - AC: `allocate(10_000, [1, 1, 1]) == [3334, 3333, 3333]`; leftover units go to the largest remainders, ties to the lowest index (also the Q7 prefill rule)
   - AC: each weighted share is within 1 minor unit of total × wᵢ / Σw; `allocate(1_150, [333, 333, 334]) == [383, 383, 384]`
   - AC: all-zero weights → equal split; empty weights → `[]`; never divides by zero
   - AC: whole-unit round-up helper: 250 → 300, 300 → 300, 0 → 0
 - [ ] **2A-5** ViewModel: tip and total in exact minor units (~1.5h) · deps: 2A-1, 2A-2, 2A-4
+  - AC: one bill source: `billMinorUnits` = `AmountParser.minorUnits(from: billAmountText, currency: selectedCurrency)` (nil → 0), and `billAmount` derives from it, so the two always agree: `"1.005"` → 101 and `billAmount == 1.01` (today `billAmount` is 1.005 while the minor units are 101); tip, total, and shares start from `billMinorUnits`, every displayed result derives from them, and the bill field keeps the text as typed
   - AC: tip and total are computed as Int minor units (tip rounded half-up to 1 øre/cent; Tip ↑ and Total ↑ round up to a whole unit as today), and `tipAmount` and `totalAmount` derive from them
   - AC: bill "33.30" at 15% → `tipAmount == 5.0` and `totalAmount == 38.3` (today these are 4.99499… and 38.29499…, displayed as "4,99 kr" and "38,29 kr")
-  - AC: equal-mode `perPersonAmount` is unchanged; all pre-existing tests pass with unchanged expectations
-- [ ] **2A-6** ViewModel: custom split state and validation (~2.5h) · deps: 2A-3, 2A-5
-  - AC: `splitMode` (default `.equal`) and `personSplits`; `personSplits.count == splitCount` after init (restored count), `incrementSplit()`, `decrementSplit()`, and direct assignment; + appends an empty row and − removes the last (pending Q7)
-  - AC: `allocationStatus` is `.balanced` iff the sum of parsed amounts (empty = 0) equals the bill in minor units (Int equality), otherwise `.under(remaining)` or `.over(excess)` in minor units (pending Q1, Q2)
+  - AC: equal-mode `perPersonAmount` is unchanged; all pre-existing tests pass with unchanged expectations (none uses a bill with more than 2 decimals)
+- [ ] **2A-6** ViewModel: custom split state, equal-split prefill, and validation (~3h) · deps: 2A-0, 2A-3, 2A-5
+  - AC: `splitMode` (default `.equal`) and `personSplits`; `personSplits.count == splitCount` after init (restored count), `incrementSplit()`, `decrementSplit()`, and direct assignment; + appends a row and − removes the last; a new row's content per spec 2A-0
+  - AC: the first switch to Custom in a session prefills every row with the equal split of the bill via `ShareAllocator` (leftover øre/cent to the lowest-numbered people), so it starts `.balanced`: bill "100" with 3 people → rows parse to [3334, 3333, 3333] minor units
+  - AC: each prefilled text parses back through `AmountParser` to its exact share, with no grouping separator (bill "3000" with 2 people → 150_000 each); text format per spec 2A-0
+  - AC: `allocationStatus` is `.balanced` iff the sum of parsed amounts (empty = 0) equals the bill in minor units (Int equality), otherwise `.under(remaining)` or `.over(excess)` in minor units; rechecked on every change
   - AC: bill "20" with rows "12,50" + "7.50" → `.balanced`; "12,50" + "7" → `.under(50)`; "15" + "7.50" → `.over(250)`
-  - AC: bill, tip, rounding, and currency changes never modify `personSplits`; equal → custom → equal → custom keeps typed amounts (pending Q7)
-  - AC: no new `@AppStorage` keys; a new ViewModel starts in `.equal` (pending Q4)
+  - AC: bill, tip, rounding, currency, and mode changes never modify a row the user has typed in (equal → custom → type → equal → custom keeps the typed text), and +/− only append or remove the last row; whether untouched prefilled rows follow bill or count changes per spec 2A-0
+  - AC: no new `@AppStorage` keys; a new ViewModel starts in `.equal`
+  - Note: if the approved spec makes the untouched-row rule more than re-running the prefill, the v2-planner splits it out before 2A-6 starts
 - [ ] **2A-7** ViewModel: per-person shares with proportional tip (~2h) · deps: 2A-6
-  - AC: `personShares` has one `PersonShare` per person in custom mode when `.balanced`, and is empty otherwise (pending Q6)
+  - AC: `personShares` has one `PersonShare` per person in custom mode when `.balanced`, and is empty otherwise
   - AC: the shares sum exactly to the total in minor units for n = 1…20 under None, Tip ↑, and Total ↑ (parameterized test)
-  - AC: tip is split in proportion to bill portions (pending Q2): bill 100 at 15% with [60, 40] → [69.00, 46.00]; bill 10 at 15% with [3.33, 3.33, 3.34] → [3.83, 3.83, 3.84]
+  - AC: tip is split in proportion to bill portions: bill 100 at 15% with [60, 40] → [69.00, 46.00]; bill 10 at 15% with [3.33, 3.33, 3.34] → [3.83, 3.83, 3.84]
   - AC: custom mode with 1 person and amount == bill → one share == total; equal mode unchanged
 - [ ] **2A-8** ViewModel: rounding × custom splits (~1.5h) · deps: 2A-7
-  - AC: Per Person ↑ with custom splits rounds each share up to a whole unit; `roundingSurplus` = sum of rounded shares − total, with 0 ≤ surplus < n whole units (pending Q5)
-  - AC: bill 100 at 15%, [50, 30, 20], Per Person ↑ → [58, 35, 23] with surplus 1.00 (pending Q5)
-  - AC: Total ↑: bill 95 at 15%, [45, 50] → [52.11, 57.89]; Tip ↑: bill 55 at custom 18%, [30, 25] → [35.45, 29.55] (pending Q2, Q5)
+  - AC: Per Person ↑ with custom splits rounds each share up to a whole unit; `roundingSurplus` = sum of rounded shares − total, with 0 ≤ surplus < n whole units
+  - AC: bill 100 at 15%, [50, 30, 20], Per Person ↑ → [58, 35, 23] with surplus 1.00
+  - AC: Total ↑: bill 95 at 15%, [45, 50] → [52.11, 57.89]; Tip ↑: bill 55 at custom 18%, [30, 25] → [35.45, 29.55]
   - AC: matrix test of 4 rounding modes × {equal, custom} × n ∈ {1, 2, 3, 7, 20}: invariants hold, and equal-mode values match pre-2A (the existing `roundPerPerson` test still gives 39.0)
-- [ ] **2A-9** `SplitModeToggle` in `SplitControlView` (~1.5h) · deps: 2A-0, 2A-6
+- [ ] **2A-9** `SplitModeToggle` in `SplitControlView` (~1.5h) · deps: 2A-0, 2A-6, 2A-15
   - AC: matches the spec; bound to `splitMode`; light haptic via `HapticManager`; spring animation; 1-person state per spec
   - AC: VoiceOver label and value, ≥ 44 pt targets, tokens only (grep clean), `#Preview` in light and dark; equal-mode stepper unchanged
-- [ ] **2A-10** `PersonSplitRow` view (~1.5h) · deps: 2A-0, 2A-1, 2A-3 · ‖ with 2A-5 to 2A-8
-  - AC: standalone view that takes a binding (no ViewModel dependency): label (pending Q3), currency-symbol prefix, decimal-pad field, and inline invalid-input state per spec
+- [ ] **2A-10** `PersonSplitRow` view (~1.5h) · deps: 2A-0, 2A-1, 2A-3, 2A-15 · ‖ with 2A-5 to 2A-8
+  - AC: standalone view that takes a binding (no ViewModel dependency): label "Person N", currency-symbol prefix, decimal-pad field, and inline invalid-input state per spec
   - AC: keeps the text as typed and parses only through `AmountParser` ("12,50" and "12.50" are both valid)
   - AC: AX5 layout per spec; VoiceOver label "Person N amount" and value with currency; tokens only; `#Preview`s for empty, filled, invalid, and AX5, in light and dark
-- [ ] **2A-11** Custom split list and remaining indicator in `SplitControlView` (~2h) · deps: 2A-6, 2A-9, 2A-10
-  - AC: in custom mode, one `PersonSplitRow` per person (1–20) via `ForEach` over stable ids, never index bindings; stepper behavior per spec (pending Q7)
-  - AC: a live left/over/balanced indicator per spec, as text + icon (pending Q6)
+- [ ] **2A-11** Custom split list and remaining indicator in `SplitControlView` (~2h) · deps: 2A-6, 2A-9, 2A-10, 2A-15
+  - AC: in custom mode, one `PersonSplitRow` per person (1–20) via `ForEach` over stable ids, never index bindings; switching to Custom shows the prefilled equal split as balanced; a typed row counts as typed per 2A-6 (for example, the row binding's setter sets `isEdited`)
+  - AC: + adds a row and − removes the last (2A-6), with new-row content per spec 2A-0
+  - AC: a live left/over/balanced indicator per spec, as text + icon
   - AC: stepping 20 → 1 while the last row is focused doesn't crash; rows insert and remove with the spring animation, and without animation under Reduce Motion
   - AC: equal mode renders as before; previews for 3 and 20 people, in light and dark
-- [ ] **2A-12** Keyboard focus flow across bill and person fields (~1.5h) · deps: 2A-11
+- [ ] **2A-12** Keyboard focus flow across bill and person fields (~1.5h) · deps: 2A-11, 2A-15
   - AC: one `@FocusState` and one keyboard toolbar, owned by `CalculatorView` (moved out of `BillInputView`)
   - AC: exactly one Done button whichever field is focused; Next/Previous moves bill → Person 1 → … → Person N per spec
   - AC: bill field behavior otherwise unchanged
-- [ ] **2A-13** `ResultsCardView`: custom per-person breakdown (~2h) · deps: 2A-0, 2A-8
-  - AC: custom + balanced shows one `BreakdownRow` per person, read from `personShares` (no arithmetic in the view), after the Tip and Total rows (pending Q3)
-  - AC: custom + not balanced shows no per-person amounts, only the status per spec (pending Q6); Per Person ↑ adds a surplus row per spec (pending Q5)
+- [ ] **2A-13** `ResultsCardView`: custom per-person breakdown (~2h) · deps: 2A-0, 2A-8, 2A-15
+  - AC: custom + balanced shows one `BreakdownRow` per person, labeled "Person N" and read from `personShares` (no arithmetic in the view), after the Tip and Total rows
+  - AC: custom + not balanced shows no per-person amounts, only the left/over status per spec; Per Person ↑ shows the surplus as its own row per spec
   - AC: equal-mode card unchanged; VoiceOver value lists each share; stagger respects Reduce Motion; previews for equal, custom balanced, and custom invalid, in light and dark
-- [ ] **2A-14** Docs and manual QA sweep (~1h) · deps: 2A-1 to 2A-13
+- [ ] **2A-14** Docs and manual QA sweep (~1h) · deps: 2A-1 to 2A-13, 2A-15
   - AC: ARCHITECTURE.md covers the new types, ViewModel tables, and view hierarchy; README lists unequal splits
   - AC: TESTING.md's test count matches `xcodebuild test`, and it adds split and parser test tables, manual QA items for custom splits and comma-decimal regions, and working destination and `-only-testing` examples
-  - AC: CHANGELOG `[Unreleased]` has Added (unequal splits) and Fixed (comma decimals, half-cent tip rounding)
-  - AC: manual QA on a simulator with Region = Norway: bill "12,50" computes, and a 3-person custom split works end to end in all 4 rounding modes
+  - AC: CHANGELOG `[Unreleased]` has Added (unequal splits), Changed (iOS 17.0 target), and Fixed (half-cent tip rounding, plus comma decimals unless the 2.0.1 hotfix already lists it under `[2.0.1]`, Q8), with no duplicate entries
+  - AC: manual QA on a simulator with Region = Norway: bill "12,50" computes, and a 3-person custom split works end to end in all 4 rounding modes, starting from the prefilled equal split
+- [ ] **2A-15** Lower deployment target to iOS 17.0 (~0.5–1h) · deps: — · ‖
+  - AC: `IPHONEOS_DEPLOYMENT_TARGET = 17.0` in every build configuration that sets it: today the project-level Debug and Release entries (both 26.2); any target-level setting for billBudy or billBudyTests says 17.0 too (none today, both inherit)
+  - AC: the build has 0 compiler warnings and all tests pass
+  - AC: any API newer than iOS 17 that the compiler flags is replaced or gated with `#available` (a grep for common iOS 18/26 APIs finds none today)
+  - AC: CHANGELOG notes the change under `[Unreleased]` → Changed
+  - AC: the PR says how iOS 17 was checked: a smoke run on an iOS 17 simulator runtime, or compile-only (only iOS 26.3 is installed today)
 
 #### Backlog
 
+- Rejected bill input (for example a pasted "1 234,50") silently computes as 0, with no feedback in the bill field. Consider reusing 2A-10's invalid-input state for `BillInputView`.
+- `MARKETING_VERSION` is 1.0 in the project while CHANGELOG is at 2.0.0 (release hygiene). Decide before tagging the 2.0.1 hotfix (Q8).
 
 ### Phase 2B — Live Currency Conversion
 
