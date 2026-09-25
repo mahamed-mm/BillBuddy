@@ -55,6 +55,7 @@ private struct RoundingPill: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, AppSpacing.md)
                 .padding(.vertical, AppSpacing.sm)
+                .contentShape(Capsule())
                 .background(isSelected ? AppColors.bbSelectedChip : .clear)
                 .clipShape(Capsule())
                 .overlay(
