@@ -24,7 +24,7 @@ billBudy/
 │   │   ├── TipSelectorView.swift        # Preset grid + custom slider
 │   │   ├── TipPresetButton.swift        # Reusable selected/unselected chip
 │   │   ├── SplitControlView.swift       # +/- stepper for people count
-│   │   └── RoundingSelectorView.swift   # Horizontal pill selector for rounding mode
+│   │   └── RoundingSelectorView.swift   # Rounding pill grid: 2 columns, 1 at accessibility text sizes
 │   ├── Results/
 │   │   ├── ResultsCardView.swift        # Tip/total/per-person card
 │   │   └── BreakdownRow.swift           # Label-value display row
