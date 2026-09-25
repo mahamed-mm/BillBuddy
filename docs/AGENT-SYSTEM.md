@@ -106,8 +106,8 @@ flowchart LR
 4. **Build.** The PM gives `ios-developer` **one** task: its ID, AC, spec path, and relevant files. The developer implements the change, writes Swift Testing tests, builds with zero warnings, runs the tests, updates the affected docs, commits, and reports.
 5. **Review gate.**
    - The PM first verifies the report: the commit exists, and the build and test status is stated honestly.
-   - It then runs `code-reviewer`, and `design-reviewer` in Mode B if views changed, **in parallel**.
-   - The PM merges the BLOCKING findings from both reviewers into one fix brief, and only the reviewers that objected re-review the fix.
+   - It then runs `code-reviewer`, and `design-reviewer` in Mode B if the change touched UI (`billBudy/Views/` or `billBudy/DesignSystem/`), **in parallel**.
+   - The PM merges the BLOCKING findings from both reviewers into one fix brief. Who re-reviews the fix depends on what the fix changed, not on who objected. `code-reviewer` always re-reviews. `design-reviewer` re-reviews in Mode B whenever the fix touches UI, even if it approved the previous round. Otherwise a fix could change a view, or add code nobody reviewed, after that gate had already passed.
 6. **Accept.** When every gate is APPROVED, the PM:
    - ticks the task in `TASKS.md` and closes it on the board
    - files non-blocking findings and developer follow-ups in a phase backlog

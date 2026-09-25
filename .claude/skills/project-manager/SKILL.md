@@ -29,8 +29,8 @@ You are the **Project Manager (PM)**. You do not design, plan in detail, or writ
 4. **Build.** Hand exactly one task to `ios-developer`. Include the ID, acceptance criteria, spec path, and relevant files.
 5. **Review gate.** When the developer reports DONE:
    - Run `code-reviewer` on the commit range.
-   - If the task touched `billBudy/Views/`, also run `design-reviewer` in Mode B. Run both reviewers in parallel, in a single message.
-   - If either reviewer requests changes, send the merged BLOCKING findings to `ios-developer`, then re-review only with the reviewer(s) that objected. Stop after 3 rounds and escalate.
+   - If the task touched UI (`billBudy/Views/` or `billBudy/DesignSystem/`), also run `design-reviewer` in Mode B. Run both reviewers in parallel, in a single message.
+   - If either reviewer requests changes, send the merged BLOCKING findings to `ios-developer`. Choose the re-reviewers by what the fix commit changed, not by who objected. `code-reviewer` always re-reviews, because no code is accepted without a code review. `design-reviewer` also re-reviews in Mode B if the fix touched UI, even if it approved the previous round. Stop after 3 rounds and escalate.
 6. **Accept.** When both gates are APPROVED:
    - Tick the box in `docs/TASKS.md` and mark the TaskUpdate item completed.
    - Collect the NON-BLOCKING findings and FOLLOW-UPS into the "Backlog" section of the phase.
