@@ -8,7 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Fixed
+
+- **Comma-decimal bill input** — in regions that use a decimal comma, such as Norway, the decimal pad types "," and every result showed 0. The new `AmountParser` enum accepts "," or "." as the decimal separator on any region and rejects text that `Double(_:)` used to accept ("-5", "nan", "inf", "1e5"). It also converts typed text to exact minor units (øre, cents) with half-up rounding, at the scale set by the new `Currency.fractionDigits`. `CalculatorViewModel.billAmount` now parses through it. Covered by 11 new tests in `AmountParserTests.swift`.
+- **Clipped rounding pills** — at the default text size the four rounding pills need 387 pt in one row, but a 6.1" or 6.3" iPhone has 361–370 pt inside the screen padding. "Per Person ↑" was cut off at the right padding edge of a horizontal scroll view with no sign that the row scrolled, and at the largest accessibility text size only two pills were fully in view. `RoundingSelectorView` now wraps the pills into a two-column grid, like the tip presets, and into one full-width column at accessibility text sizes, so every pill is fully visible without scrolling. Covered by 2 new tests in `RoundingSelectorViewTests.swift`.
 
 ---
 

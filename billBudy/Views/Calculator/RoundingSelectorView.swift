@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RoundingSelectorView: View {
     @Environment(CalculatorViewModel.self) private var viewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
@@ -9,23 +10,34 @@ struct RoundingSelectorView: View {
                 .font(AppTypography.headline)
                 .foregroundStyle(AppColors.bbPrimaryText)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: AppSpacing.sm) {
-                    ForEach(RoundingMode.allCases) { mode in
-                        RoundingPill(
-                            title: mode.displayText,
-                            isSelected: viewModel.selectedRounding == mode
-                        ) {
-                            HapticManager.lightImpact()
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                viewModel.selectedRounding = mode
-                            }
-                            viewModel.savePreferences()
+            LazyVGrid(columns: columns, spacing: AppSpacing.sm) {
+                ForEach(RoundingMode.allCases) { mode in
+                    RoundingPill(
+                        title: mode.displayText,
+                        isSelected: viewModel.selectedRounding == mode
+                    ) {
+                        HapticManager.lightImpact()
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                            viewModel.selectedRounding = mode
                         }
+                        viewModel.savePreferences()
                     }
                 }
             }
         }
+    }
+
+    private var columns: [GridItem] {
+        Array(
+            repeating: GridItem(.flexible(), spacing: AppSpacing.sm),
+            count: Self.columnCount(for: dynamicTypeSize)
+        )
+    }
+
+    /// Four pills don't fit in one row on a 6.1" screen, so they wrap into a grid instead of
+    /// scrolling out of view. Accessibility sizes use one full-width pill per row.
+    static func columnCount(for dynamicTypeSize: DynamicTypeSize) -> Int {
+        dynamicTypeSize.isAccessibilitySize ? 1 : 2
     }
 }
 
@@ -39,6 +51,8 @@ private struct RoundingPill: View {
             Text(title)
                 .font(AppTypography.body)
                 .foregroundStyle(isSelected ? AppColors.bbTeal : AppColors.bbPrimaryText)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, AppSpacing.md)
                 .padding(.vertical, AppSpacing.sm)
                 .background(isSelected ? AppColors.bbSelectedChip : .clear)
@@ -58,8 +72,27 @@ private struct RoundingPill: View {
     }
 }
 
-#Preview {
+#Preview("Dark") {
     RoundingSelectorView()
-        .padding()
+        .padding(AppSpacing.md)
+        .background(AppColors.bbBackground)
         .environment(CalculatorViewModel())
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Light") {
+    RoundingSelectorView()
+        .padding(AppSpacing.md)
+        .background(AppColors.bbBackground)
+        .environment(CalculatorViewModel())
+        .preferredColorScheme(.light)
+}
+
+#Preview("Dark, AX5") {
+    RoundingSelectorView()
+        .padding(AppSpacing.md)
+        .background(AppColors.bbBackground)
+        .environment(CalculatorViewModel())
+        .preferredColorScheme(.dark)
+        .dynamicTypeSize(.accessibility5)
 }
