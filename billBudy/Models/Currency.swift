@@ -28,4 +28,12 @@ enum Currency: String, CaseIterable, Identifiable {
         case .kes: "en_KE"
         }
     }
+
+    /// Digits after the decimal separator: one unit is 10^fractionDigits minor units (øre, cents).
+    /// The single source of the minor-unit scale.
+    var fractionDigits: Int {
+        switch self {
+        case .nok, .usd, .kes: 2
+        }
+    }
 }
