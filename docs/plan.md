@@ -23,6 +23,7 @@
 | [TASKS.md](TASKS.md) | Development to-do list by milestone |
 | [TESTING.md](TESTING.md) | Test strategy, coverage goals, QA checklists |
 | [CHANGELOG.md](CHANGELOG.md) | Version history (Keep a Changelog format) |
+| [AGENT-SYSTEM.md](AGENT-SYSTEM.md) | Multi-agent development workflow (PM + specialized sub-agents) |
 | [CLAUDE.md](../CLAUDE.md) | Claude Code guidance — conventions, build commands |
 
 ---

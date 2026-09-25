@@ -40,6 +40,8 @@ All documentation lives in the `docs/` folder (except this file).
 | `docs/TASKS.md` | Development to-do list by milestone |
 | `docs/TESTING.md` | Test strategy, what to test, how to run, coverage goals |
 | `docs/CHANGELOG.md` | Version history (Keep a Changelog format) |
+| `docs/AGENT-SYSTEM.md` | Multi-agent workflow — Project Manager + planner, designer, design reviewer, developer, code reviewer |
+| `docs/design/` | Feature design specs produced and gated by the agent team |
 
 ## Architecture
 
@@ -99,6 +101,10 @@ Always use the design system — never use raw color, font, or spacing values. S
 - Trigger haptics through `HapticManager` — never use `UIImpactFeedbackGenerator` directly
 - Use `@ObservationIgnored` on any `@AppStorage` properties inside `@Observable` classes
 - Animations: `.spring(response: 0.4, dampingFraction: 0.7)` for value changes
+
+## Agent Team
+
+Development can be driven by a Project Manager agent (`/project-manager` skill in `.claude/skills/`) that delegates to sub-agents in `.claude/agents/`: `v2-planner`, `ui-designer`, `design-reviewer`, `ios-developer`, `code-reviewer`. Every task passes code review (and design review if it touches UI) before it is accepted. See `docs/AGENT-SYSTEM.md`.
 
 ## Roadmap
 
