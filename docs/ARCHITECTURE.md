@@ -12,7 +12,7 @@ billBudy/
 ├── ContentView.swift                    # Root view
 ├── Models/
 │   ├── TipPreset.swift                  # Enum: zero/five/ten/fifteen/twenty/twentyFive/custom
-│   ├── Currency.swift                   # Enum: nok/usd/kes with symbol, flag, locale
+│   ├── Currency.swift                   # Enum: nok/usd/kes with symbol, flag, locale, fractionDigits
 │   ├── TipCalculation.swift             # Struct: computed result snapshot
 │   └── RoundingMode.swift               # Enum: none/roundTip/roundTotal/roundPerPerson
 ├── ViewModels/
@@ -33,7 +33,8 @@ billBudy/
 │       └── GlassCard.swift              # Reusable elevated card container
 ├── Services/
 │   ├── HapticManager.swift              # enum namespace, wraps UIImpactFeedbackGenerator
-│   └── CurrencyFormatter.swift          # enum namespace, cached NumberFormatters per locale
+│   ├── CurrencyFormatter.swift          # enum namespace, cached NumberFormatters per locale
+│   └── AmountParser.swift               # enum namespace, parses "," or "." decimal input on any region
 ├── DesignSystem/
 │   ├── AppColors.swift                  # Color tokens (bbTeal, bbCardBackground, etc.)
 │   ├── AppTypography.swift              # Font presets (largeTitle, title, headline, etc.)
@@ -54,8 +55,9 @@ billBudy/
 | Single `CalculatorViewModel` for V1 | All state lives on one screen — tip input, split count, currency, and results are tightly coupled |
 | `@Environment` injection | ViewModel created with `@State` at the App level, distributed to child views via `.environment()` |
 | `@ObservationIgnored` on `@AppStorage` | `@AppStorage` doesn't compose with `@Observable`; bridged manually in `init()` + `savePreferences()` |
-| `enum` namespaces for stateless services | `HapticManager` and `CurrencyFormatter` are pure utility — enum prevents accidental instantiation |
+| `enum` namespaces for stateless services | `HapticManager`, `CurrencyFormatter`, and `AmountParser` are pure utility — enum prevents accidental instantiation |
 | Cached `NumberFormatter` instances | `NumberFormatter` is expensive to create; one instance per locale is reused |
+| Region-independent amount parsing | `AmountParser` accepts "," or "." on any region with no `NumberFormatter`, so the same text gives the same amount everywhere; minor units come from the digits, never through `Double` |
 
 ---
 
@@ -91,7 +93,7 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 
 | Property              | Type              | Derivation |
 |-----------------------|-------------------|------------|
-| `billAmount`          | `Double`          | Parsed from `billAmountText` (0.0 if invalid) |
+| `billAmount`          | `Double`          | Parsed from `billAmountText` by `AmountParser` ("," or "." decimal; 0.0 if invalid) |
 | `effectiveTipPercent` | `Double`          | Preset's percentage, or `customTipPercent` if `.custom` |
 | `tipAmount`           | `Double`          | `billAmount * effectiveTipPercent / 100` |
 | `totalAmount`         | `Double`          | `billAmount + tipAmount` |

@@ -18,7 +18,7 @@ final class CalculatorViewModel {
     @ObservationIgnored @AppStorage("savedRounding") private var savedRounding: Int = 0
 
     // MARK: - Computed Properties
-    var billAmount: Double { Double(billAmountText) ?? 0.0 }
+    var billAmount: Double { AmountParser.amount(from: billAmountText) ?? 0.0 }
     var effectiveTipPercent: Double { selectedPreset == .custom ? customTipPercent : selectedPreset.percentage }
 
     private var rawTipAmount: Double { billAmount * effectiveTipPercent / 100 }
