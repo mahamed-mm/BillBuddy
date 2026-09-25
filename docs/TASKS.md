@@ -205,7 +205,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. 16 tasks, ~27
   - AC: specifies the custom-mode rows (Q7): the prefilled equal split and its text format, what a row added by + contains, and whether untouched prefilled rows follow bill or count changes, including a switch to Custom before a bill is typed
   - AC: specifies the 1-person case, the keyboard flow across the bill and person fields (one Done, Next/Previous), the AX5 row layout, a VoiceOver label and value per control, and Reduce Motion
   - AC: lists new tokens (for example a warning color) with light and dark values, or states "none"; uses only iOS 17 APIs
-- [ ] **2A-1** `AmountParser`: locale-tolerant amount parsing that fixes comma-decimal bill input (~1.5h) · deps: — · ‖
+- [x] **2A-1** `AmountParser`: locale-tolerant amount parsing that fixes comma-decimal bill input (~1.5h) · deps: — · ‖ · b33aca0, code review APPROVED 5/5, 0 fix rounds
   - AC: pure `enum AmountParser` in `Services/`, tested in a new `AmountParserTests.swift`
   - AC: `"12,50"` and `"12.50"` → 12.5; `"12"`, `"12,"`, `"12."` → 12; `",5"` → 0.5
   - AC: `""`, `"abc"`, `"12abc"`, `"1,2,3"`, `"1.234,50"`, `"-5"`, `"nan"`, `"inf"`, `"1e5"` → nil (today `Double(_:)` accepts the last four)
@@ -291,6 +291,11 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. 16 tasks, ~27
 
 - Rejected bill input (for example a pasted "1 234,50") silently computes as 0, with no feedback in the bill field. Consider reusing 2A-10's invalid-input state for `BillInputView`.
 - `MARKETING_VERSION` is 1.0 in the project while CHANGELOG is at 2.0.0 (release hygiene). Decide before tagging the 2.0.1 hotfix (Q8).
+- [2A-1 N1] The tests read the app's real saved preferences. After manual use leaves Per Person ↑ selected, `splitByTwo` and `splitByThree` fail (59/61), because they never set `selectedRounding`. 2A-2 should pre-seed every non-default rounding mode (1, 2, 3), not only 2. Until then, run tests on a simulator with clean app data (the hotfix validation included).
+- [2A-1 N2] Under the any-region rule, a pasted US-grouped `"1,234"` parses as 1.234, a silent 1000× under-read. The decimal pad can't type it, so it takes a paste or a hardware keyboard. Consider rejecting more than 2 fraction digits after "," for 2-decimal currencies.
+- [2A-1 N3] The scale path in `AmountParser.minorUnits` is untested, because every currency uses 2. Add an internal `minorUnits(from:fractionDigits:)` seam and test it at 0 and 3 (`",5"`@0 → 1, `"1,0005"`@3 → 1001).
+- [2A-1 N4] TESTING.md still says 39 tests (61 now) and has no AmountParser section. Its manual QA lacks a "type 12,50 with Region = Norway" step, which should be checked before tagging 2.0.1 (the rest is covered by 2A-14). CLAUDE.md also says 39 (human-owned).
+- [2A-1 N6] `AmountParser` is stateless, so it could be `nonisolated` if a caller off the main actor ever appears.
 
 ### Phase 2B — Live Currency Conversion
 
