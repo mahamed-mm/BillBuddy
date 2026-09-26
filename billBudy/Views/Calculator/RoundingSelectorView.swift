@@ -10,34 +10,42 @@ struct RoundingSelectorView: View {
                 .font(AppTypography.headline)
                 .foregroundStyle(AppColors.bbPrimaryText)
 
-            LazyVGrid(columns: columns, spacing: AppSpacing.sm) {
-                ForEach(RoundingMode.allCases) { mode in
-                    RoundingPill(
-                        title: mode.displayText,
-                        isSelected: viewModel.selectedRounding == mode
-                    ) {
-                        HapticManager.lightImpact()
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                            viewModel.selectedRounding = mode
+            // Grid is eager, unlike LazyVGrid, so all four pills are in the accessibility tree
+            // even when they start off screen, and VoiceOver reaches them before the results card.
+            Grid(horizontalSpacing: AppSpacing.sm, verticalSpacing: AppSpacing.sm) {
+                ForEach(Self.rows(columnCount: Self.columnCount(for: dynamicTypeSize)), id: \.self) { row in
+                    GridRow {
+                        ForEach(row) { mode in
+                            RoundingPill(
+                                title: mode.displayText,
+                                isSelected: viewModel.selectedRounding == mode
+                            ) {
+                                HapticManager.lightImpact()
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                    viewModel.selectedRounding = mode
+                                }
+                                viewModel.savePreferences()
+                            }
                         }
-                        viewModel.savePreferences()
                     }
                 }
             }
         }
     }
 
-    private var columns: [GridItem] {
-        Array(
-            repeating: GridItem(.flexible(), spacing: AppSpacing.sm),
-            count: Self.columnCount(for: dynamicTypeSize)
-        )
-    }
-
     /// Four pills don't fit in one row on a 6.1" screen, so they wrap into a grid instead of
     /// scrolling out of view. Accessibility sizes use one full-width pill per row.
     static func columnCount(for dynamicTypeSize: DynamicTypeSize) -> Int {
         dynamicTypeSize.isAccessibilitySize ? 1 : 2
+    }
+
+    /// The rounding modes in display order, split into grid rows of `columnCount` pills.
+    static func rows(columnCount: Int) -> [[RoundingMode]] {
+        let modes = RoundingMode.allCases
+        let width = max(columnCount, 1)
+        return stride(from: 0, to: modes.count, by: width).map { start in
+            Array(modes[start..<min(start + width, modes.count)])
+        }
     }
 }
 
@@ -57,6 +65,9 @@ private struct RoundingPill: View {
                 .padding(.vertical, AppSpacing.sm)
                 .background(isSelected ? AppColors.bbSelectedChip : .clear)
                 .clipShape(Capsule())
+                // An unselected pill has a clear fill, which doesn't take taps, so only its label and
+                // stroke would respond. Placed after the padding, this makes the whole capsule tappable.
+                .contentShape(Capsule())
                 .overlay(
                     Capsule()
                         .strokeBorder(
