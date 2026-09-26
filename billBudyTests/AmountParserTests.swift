@@ -85,17 +85,18 @@ struct AmountParserTests {
 
 @Suite("CalculatorViewModel — Bill Parsing")
 struct BillParsingTests {
+    private let defaults = TestDefaults()
 
     @Test("Comma decimal bill parses")
     func commaDecimalBill() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "12,50"
         #expect(vm.billAmount == 12.5)
     }
 
     @Test("Comma decimal bill drives tip, total, and per person")
     func commaDecimalResults() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "12,50"
         vm.selectedPreset = .twenty
         vm.selectedRounding = .none
@@ -107,7 +108,7 @@ struct BillParsingTests {
 
     @Test("Text that Double(_:) accepted but the parser rejects gives a zero bill", arguments: ["-5", "nan", "inf", "1e5"])
     func rejectedTextIsZero(text: String) {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = text
         #expect(vm.billAmount == 0.0)
         #expect(vm.totalAmount == 0.0)
