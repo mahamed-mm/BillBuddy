@@ -32,6 +32,10 @@ All adaptive colors use `Color(UIColor { traits in ... })` with explicit dark/li
 | `bbUnselectedBorder` | `systemGray4` (`#D1D1D6`)     | `systemGray3` (`#3A3A3C`)      | Border for unselected tip preset chips |
 | `bbCardBorder`       | `black` @ 4% opacity          | `white` @ 8% opacity           | Subtle glass-edge border on cards |
 | `bbCardShadow`       | `black` @ 8% opacity          | `black` @ 40% opacity          | Card shadow (soft light / deep dark elevation) |
+| `bbWarning` (proposed) | `#C93400`                   | `#FF9F0A`                      | Problem states only, always paired with an icon and words: split-status icons (bill unreadable, invalid row, over, left) and the invalid-amount field border, icon, and caption. Source: `docs/design/2A-unequal-splits.md` §5 |
+| `bbTealText` (proposed) | `#00695C`                  | `#00E5CC` (= `bbTeal`)         | Teal *text and glyphs*: the selected split-mode chip's label and checkmark, and the "Clear amounts" button. `bbTeal` text is 1.4:1 on light surfaces. Source: `docs/design/2A-unequal-splits.md` §5 |
+
+Rows marked **(proposed)** are waiting for design-review approval of `docs/design/2A-unequal-splits.md`. They aren't in `DesignSystem/` yet.
 
 ### Color Usage Rules
 
@@ -54,6 +58,8 @@ Defined in `DesignSystem/AppTypography.swift`. All fonts use the `.rounded` desi
 | `.body`       | `.system(.body, design: .rounded)`                           | General text, descriptions |
 | `.caption`    | `.system(.caption, design: .rounded)`                        | Fine print, secondary labels |
 | `.mono`       | `.system(.title, design: .monospaced, weight: .bold)`        | Currency amounts in results (tabular alignment) |
+| `.amountField` (proposed) | `.system(.headline, design: .rounded, weight: .medium).monospacedDigit()` | Typed and automatic amounts in `PersonSplitRow` |
+| `.amountMinimumScale` (proposed) | `0.5` (`CGFloat`, used with `.minimumScaleFactor`) | One-line amounts that must shrink instead of wrapping: `PersonSplitRow` automatic amounts and `BreakdownRow` values |
 
 ### Typography Usage Rules
 
@@ -79,6 +85,7 @@ Defined in `DesignSystem/AppSpacing.swift`. A consistent spatial scale used for 
 | `xxl`          | 48         | Top/bottom screen margins |
 | `cornerRadius` | 16         | Buttons, chips, small cards |
 | `cardRadius`   | 20         | Main result card, GlassCard containers |
+| `minTapTarget` (proposed) | 44 | Minimum width and height of every tap target (HIG default). Apply it as `minWidth`/`minHeight` so targets grow with Dynamic Type |
 
 ### Spacing Usage Rules
 

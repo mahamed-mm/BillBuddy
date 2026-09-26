@@ -34,7 +34,8 @@ billBudy/
 ├── Services/
 │   ├── HapticManager.swift              # enum namespace, wraps UIImpactFeedbackGenerator
 │   ├── CurrencyFormatter.swift          # enum namespace, cached NumberFormatters per locale
-│   └── AmountParser.swift               # enum namespace, parses "," or "." decimal input on any region
+│   ├── AmountParser.swift               # enum namespace, parses "," or "." decimal input on any region
+│   └── ShareAllocator.swift             # enum namespace, splits Int minor units exactly by weight, rounds up to whole units
 ├── DesignSystem/
 │   ├── AppColors.swift                  # Color tokens (bbTeal, bbCardBackground, etc.)
 │   ├── AppTypography.swift              # Font presets (largeTitle, title, headline, etc.)
@@ -55,7 +56,7 @@ billBudy/
 | Single `CalculatorViewModel` for V1 | All state lives on one screen — tip input, split count, currency, and results are tightly coupled |
 | `@Environment` injection | ViewModel created with `@State` at the App level, distributed to child views via `.environment()` |
 | `@ObservationIgnored` on `@AppStorage` | `@AppStorage` doesn't compose with `@Observable`; bridged manually in `init()` + `savePreferences()` |
-| `enum` namespaces for stateless services | `HapticManager`, `CurrencyFormatter`, and `AmountParser` are pure utility — enum prevents accidental instantiation |
+| `enum` namespaces for stateless services | `HapticManager`, `CurrencyFormatter`, `AmountParser`, and `ShareAllocator` are pure utility — enum prevents accidental instantiation |
 | Cached `NumberFormatter` instances | `NumberFormatter` is expensive to create; one instance per locale is reused |
 | Region-independent amount parsing | `AmountParser` accepts "," or "." on any region with no `NumberFormatter`, so the same text gives the same amount everywhere; minor units come from the digits, never through `Double` |
 
