@@ -9,8 +9,9 @@ import Foundation
 /// "nan", and "inf". No `NumberFormatter` is involved, because its result depends on
 /// the device locale.
 ///
-/// Amounts above `maxMinorUnits` are rejected too, by `minorUnits(from:currency:)`, which is
-/// how the app reads every amount.
+/// Amounts above `maxMinorUnits` are rejected too. Every function here applies that cap, so
+/// nothing can decide validity without it. The app reads every amount through
+/// `minorUnits(from:currency:)`.
 enum AmountParser {
     /// The largest amount `minorUnits(from:currency:)` accepts: 10^15 minor units
     /// (10 000 000 000 000,00 kr). Anything above it is rejected like any other invalid text.
@@ -19,21 +20,6 @@ enum AmountParser {
     /// all fit in `Int` with room to spare, and the bill, tip, and total stay under 2^53 minor
     /// units, where `Currency.amount(minorUnits:)` is exact.
     static let maxMinorUnits = 1_000_000_000_000_000
-
-    /// The amount in `text` with every typed digit kept, or `nil` if `text` isn't a valid amount.
-    ///
-    /// `"12,50"` and `"12.50"` → 12.5, `",5"` → 0.5, `"1e5"` → `nil`.
-    ///
-    /// It has no cap, so it doesn't decide whether an amount is valid:
-    /// `minorUnits(from:currency:)` does.
-    static func amount(from text: String) -> Double? {
-        guard let parts = decimalParts(of: text) else { return nil }
-        let integer = parts.integer.isEmpty ? "0" : parts.integer
-        let fraction = parts.fraction.isEmpty ? "0" : parts.fraction
-        // Only ASCII digits are left, so `Double(_:)` does a plain, locale-independent parse.
-        guard let value = Double("\(integer).\(fraction)"), value.isFinite else { return nil }
-        return value
-    }
 
     /// The amount in `text` as minor units of `currency` (øre, cents), rounded half-up at
     /// `currency.fractionDigits`, or `nil` if `text` isn't a valid amount or is above

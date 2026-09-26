@@ -7,21 +7,20 @@ import Testing
 struct AmountParserTests {
 
     @Test("Parses comma or point decimals", arguments: [
-        ("12,50", 12.5), ("12.50", 12.5),
-        ("12", 12.0), ("12,", 12.0), ("12.", 12.0),
-        (",5", 0.5), (".5", 0.5),
-        ("0", 0.0), ("0,00", 0.0), ("007", 7.0),
-        ("0,29", 0.29), ("999999,99", 999999.99),
-        ("1.005", 1.005), // every typed digit is kept; only minorUnits rounds
+        ("12,50", 1_250), ("12.50", 1_250),
+        ("12", 1_200), ("12,", 1_200), ("12.", 1_200),
+        (",5", 50), (".5", 50),
+        ("0", 0), ("0,00", 0), ("007", 700),
+        ("0,29", 29), ("999999,99", 99_999_999),
     ])
-    func parsesAmount(text: String, expected: Double) {
-        #expect(AmountParser.amount(from: text) == expected)
+    func parsesAmount(text: String, expected: Int) {
+        #expect(AmountParser.minorUnits(from: text, currency: .nok) == expected)
     }
 
     @Test("Comma and point give the same result", arguments: ["12,50", "0,29", ",5", "12,", "999999,99", "1,005"])
     func commaMatchesPoint(text: String) {
         let pointText = String(text.map { $0 == "," ? "." : $0 })
-        #expect(AmountParser.amount(from: text) == AmountParser.amount(from: pointText))
+        #expect(AmountParser.minorUnits(from: text, currency: .nok) != nil)
         #expect(AmountParser.minorUnits(from: text, currency: .nok) == AmountParser.minorUnits(from: pointText, currency: .nok))
     }
 
@@ -29,7 +28,6 @@ struct AmountParserTests {
         "", "abc", "12abc", "1,2,3", "1.234,50", "-5", "nan", "inf", "1e5",
     ])
     func rejectsInvalidText(text: String) {
-        #expect(AmountParser.amount(from: text) == nil)
         #expect(AmountParser.minorUnits(from: text, currency: .nok) == nil)
     }
 
@@ -42,7 +40,6 @@ struct AmountParserTests {
         "12\u{0301}",         // digit with a combining mark
     ])
     func rejectsOtherText(text: String) {
-        #expect(AmountParser.amount(from: text) == nil)
         #expect(AmountParser.minorUnits(from: text, currency: .nok) == nil)
     }
 
@@ -122,11 +119,11 @@ struct AmountParserTests {
         #expect(AmountParser.minorUnits(from: "1000000000000,0005", fractionDigits: 3) == nil)
     }
 
-    @Test("Amounts beyond Double's range return nil, not infinity")
-    func amountNotFinite() {
+    @Test("Amounts hundreds of digits long return nil")
+    func amountFarAboveCap() {
         let huge = String(repeating: "9", count: 400)
-        #expect(AmountParser.amount(from: huge) == nil)
         #expect(AmountParser.minorUnits(from: huge, currency: .nok) == nil)
+        #expect(AmountParser.minorUnits(from: "\(huge),99", currency: .nok) == nil)
     }
 }
 

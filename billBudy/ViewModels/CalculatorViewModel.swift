@@ -6,9 +6,42 @@ final class CalculatorViewModel {
     var billAmountText: String = ""
     var selectedPreset: TipPreset = .fifteen
     var customTipPercent: Double = 18.0
-    var splitCount: Int = 1
     var selectedCurrency: Currency = .nok
     var selectedRounding: RoundingMode = .none
+
+    /// Equal shares, or an amount per person (`personSplits`). Not saved: every launch starts in
+    /// `.equal` (Q4).
+    var splitMode: SplitMode = .equal
+
+    /// One row per person, Person 1 first. The rows exist in both modes, and Equal mode only hides
+    /// them, so typed amounts last for the session (Q7). Not saved: every launch starts with every
+    /// row empty (Q4).
+    ///
+    /// Views edit each row's `amountText`. Only `splitCount` adds or removes rows, always at the
+    /// end, so the person numbers stay 1…`splitCount` in order, and the other rows keep their `id`
+    /// and text.
+    var personSplits: [PersonSplit] = [PersonSplit(personNumber: 1)]
+
+    /// The head count, within `splitCountRange`. It's the number of rows, so the two always agree.
+    ///
+    /// Setting it clamps the value to 1…20, then appends empty (automatic) rows or removes rows
+    /// from the end, typed or not (spec E5, E6, E8). It never rebuilds the array, so every row it
+    /// keeps keeps its `id` (focus follows it) and its text.
+    var splitCount: Int {
+        get { personSplits.count }
+        set {
+            let count = min(max(newValue, Self.splitCountRange.lowerBound), Self.splitCountRange.upperBound)
+            let current = personSplits.count
+            if count < current {
+                personSplits.removeLast(current - count)
+            } else if count > current {
+                personSplits += (current + 1...count).map { PersonSplit(personNumber: $0) }
+            }
+        }
+    }
+
+    /// The head counts the stepper allows: 1 to 20 people.
+    static let splitCountRange = 1...20
 
     // MARK: - Persistence Bridge
     // Keys, defaults, and the store are set in `init(defaults:)`.
@@ -31,10 +64,11 @@ final class CalculatorViewModel {
     /// 50 %, the top of the custom tip slider, in basis points.
     private static let maxTipBasisPoints = 5_000
 
-    /// `effectiveTipPercent` in basis points (hundredths of a percent), rounded half-up, so every
-    /// percent with up to 2 decimals is exact. The custom slider's range is 0–50 %, so a percent
-    /// outside it (only a test or a corrupted saved value can set one) counts as the nearest end,
-    /// and NaN counts as 0.
+    /// `effectiveTipPercent` in basis points (hundredths of a percent), to the nearest basis point,
+    /// so every percent with up to 2 decimals is exact. A tie past 2 decimals can go either way,
+    /// because percent × 100 is a binary product: 12.345 % gives 1 235, but 1.005 % gives 100.
+    /// The custom slider's range is 0–50 %, so a percent outside it (only a test or a corrupted
+    /// saved value can set one) counts as the nearest end, and NaN counts as 0.
     private var tipBasisPoints: Int {
         let basisPoints = (effectiveTipPercent * 100).rounded(.toNearestOrAwayFromZero)
         guard basisPoints > 0 else { return 0 } // false for NaN too
@@ -87,6 +121,48 @@ final class CalculatorViewModel {
         )
     }
 
+    // MARK: - Custom Split
+    // A typed row pays what its text says. The automatic rows (`PersonSplit.isAutomatic(_:)`)
+    // split what the typed rows leave of the bill (spec §3.1). Their amounts are computed here and
+    // never written into `amountText`, so the app never changes typed text, and untouched rows
+    // follow the bill, the head count, and the other rows.
+
+    /// Each row's part of the bill before tip, in minor units of `selectedCurrency`: one per row,
+    /// in `personSplits` order, in either mode. Recomputed on every read.
+    ///
+    /// - A typed row: its `AmountParser` value, or 0 while the parser rejects the text, above the
+    ///   cap included (spec §3.2).
+    /// - The automatic rows: max(0, bill − the typed rows' portions), split by `ShareAllocator`
+    ///   with equal weights, so leftover units go to the lowest-numbered automatic rows. Bill
+    ///   100,00 with 3 automatic rows → [3334, 3333, 3333]; bill 1 250,00 with Person 1 at 150 →
+    ///   [15_000, 36_667, 36_667, 36_666].
+    ///
+    /// At most 20 rows, each at most `AmountParser.maxMinorUnits`, so the sums can't overflow.
+    var billPortionsMinorUnits: [Int] {
+        // nil for an automatic row.
+        let typedPortions: [Int?] = personSplits.map { split in
+            split.isAutomatic ? nil : AmountParser.minorUnits(from: split.amountText, currency: selectedCurrency) ?? 0
+        }
+        let typedTotal = typedPortions.reduce(0) { $0 + ($1 ?? 0) }
+        let automaticRowCount = typedPortions.filter { $0 == nil }.count
+        var automaticPortions = ShareAllocator.allocate(
+            max(0, billMinorUnits - typedTotal),
+            weights: Array(repeating: 1, count: automaticRowCount)
+        ).makeIterator()
+        // One portion per automatic row, in row order, so `next()` never runs out.
+        return typedPortions.map { $0 ?? automaticPortions.next() ?? 0 }
+    }
+
+    /// What `split`'s field shows while the row is automatic: its bill portion as a number without
+    /// the symbol, in the currency's format (spec §3.1), such as "1 500,00" or "1,500.00".
+    ///
+    /// Display only: it's never written into `amountText` and never parsed. A typed row shows its
+    /// own text instead, so its value here goes unused. A row that isn't in `personSplits` gets 0.
+    func automaticAmountText(for split: PersonSplit) -> String {
+        let portion = personSplits.firstIndex { $0.id == split.id }.map { billPortionsMinorUnits[$0] } ?? 0
+        return CurrencyFormatter.formatWithoutSymbol(minorUnits: portion, currency: selectedCurrency)
+    }
+
     // MARK: - Init
     /// Restores the saved preferences from `defaults`, and `savePreferences()` writes them back there.
     /// The app and previews use `.standard`; tests pass a suite of their own.
@@ -103,7 +179,7 @@ final class CalculatorViewModel {
         if let preset = TipPreset(rawValue: savedTip) {
             selectedPreset = preset
         }
-        splitCount = savedSplit
+        splitCount = savedSplit // clamped to 1…20, with one empty row per person
         customTipPercent = savedCustomTip
         if let rounding = RoundingMode(rawValue: savedRounding) {
             selectedRounding = rounding
@@ -112,14 +188,14 @@ final class CalculatorViewModel {
 
     // MARK: - Methods
     func incrementSplit() {
-        if splitCount < 20 {
+        if splitCount < Self.splitCountRange.upperBound {
             splitCount += 1
             savePreferences()
         }
     }
 
     func decrementSplit() {
-        if splitCount > 1 {
+        if splitCount > Self.splitCountRange.lowerBound {
             splitCount -= 1
             savePreferences()
         }

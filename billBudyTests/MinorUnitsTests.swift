@@ -106,18 +106,21 @@ struct MinorUnitsTests {
     }
 
     // The slider sets whole percents, so this only matters for tests and corrupted saved values.
-    @Test("A percent with more than 2 decimals counts to the nearest 0.01 %, half-up", arguments: [
-        (12.345, 123_500), // 12,35 % of 10 000 kr (12,345 % would be 123 450 øre)
-        (12.344, 123_400), // 12,34 %
-        (0.005, 100),      // 0,01 %
-        (0.004, 0),        // 0,00 %
+    // A tie past 2 decimals can go either way, because percent × 100 is a binary product.
+    @Test("A percent with more than 2 decimals counts to the nearest basis point", arguments: [
+        (12.346, [123_500]),          // 12,35 % of 10 000 kr (12,346 % would be 123 460 øre)
+        (12.344, [123_400]),          // 12,34 %
+        (0.006, [100]),               // 0,01 %
+        (0.004, [0]),                 // 0,00 %
+        (12.345, [123_400, 123_500]), // a tie: 12.345 × 100 is exactly 1234.5, so it goes up
+        (1.005, [10_000, 10_100]),    // a tie: 1.005 × 100 is just under 100.5, so it goes down
     ])
-    func percentToBasisPoints(percent: Double, tip: Int) {
+    func percentToBasisPoints(percent: Double, tips: [Int]) {
         let vm = defaults.makeViewModel()
         vm.billAmountText = "10000"
         vm.selectedPreset = .custom
         vm.customTipPercent = percent
-        #expect(vm.tipMinorUnits == tip)
+        #expect(tips.contains(vm.tipMinorUnits))
     }
 
     @Test("A custom percent outside the slider's 0–50 % counts as the nearest end, and NaN as 0")

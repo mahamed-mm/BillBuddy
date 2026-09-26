@@ -61,7 +61,7 @@ billBudy/
 | `@ObservationIgnored` on `@AppStorage` | `@AppStorage` doesn't compose with `@Observable`; bridged manually in `init(defaults:)` + `savePreferences()` |
 | Injectable preferences store | `init(defaults: UserDefaults = .standard)`: the app and previews use `.standard`, and tests give each view model a new suite (`TestDefaults`), so results never depend on the simulator's saved preferences |
 | `enum` namespaces for stateless services | `HapticManager`, `CurrencyFormatter`, `AmountParser`, and `ShareAllocator` are pure utility — enum prevents accidental instantiation |
-| Cached `NumberFormatter` instances | `NumberFormatter` is expensive to create; one instance per locale is reused |
+| Cached `NumberFormatter` instances | `NumberFormatter` is expensive to create; one currency-style instance per locale, and one plain-number instance per currency (automatic-row previews), are reused |
 | Region-independent amount parsing | `AmountParser` accepts "," or "." on any region with no `NumberFormatter`, so the same text gives the same amount everywhere; minor units come from the digits, never through `Double` |
 | Exact money in `Int` minor units | The bill, tip, and total are `Int` minor units (øre, cents), and their math has no `Double` step: the tip is the bill times the percent in integer basis points, rounded half-up to 1 minor unit, and Tip ↑ / Total ↑ use `ShareAllocator.roundedUpToWholeUnit`. `ShareAllocator` splits amounts by largest remainder, ties to the lowest index, with full-width products, so shares add up exactly. `AmountParser.minorUnits` rejects amounts above 10^15 minor units, so no sum or product can overflow `Int`. `Double` appears only for display, through `Currency.amount(minorUnits:)`, which is exact up to 2^53 minor units. Equal-mode `perPersonAmount` still divides `totalAmount` as a `Double` |
 
@@ -76,7 +76,7 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 ```
 
 1. **User acts** — types a bill amount, taps a tip preset, adjusts the slider, or changes the split count
-2. **ViewModel updates** — the corresponding stored property changes (`billAmountText`, `selectedPreset`, `customTipPercent`, `splitCount`, `selectedCurrency`)
+2. **ViewModel updates** — the corresponding stored property changes (`billAmountText`, `selectedPreset`, `customTipPercent`, `splitCount` through its rows, `selectedCurrency`, `splitMode`, or a row's `amountText` in `personSplits`)
 3. **Computed properties refire** — `@Observable` tracks which properties each view reads; only affected views re-render
 4. **Views display** — `tipAmount`, `totalAmount`, and `perPersonAmount` are shown via `CurrencyFormatter`
 5. **Persistence** — on relevant changes, `savePreferences()` writes through `@AppStorage` to the store passed to `init(defaults:)` (currency, tip preset, split count, custom tip %, rounding)
@@ -87,13 +87,18 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 
 ### Input Properties
 
-| Property            | Type          | Default        |
-|---------------------|---------------|----------------|
-| `billAmountText`    | `String`      | `""`           |
-| `selectedPreset`    | `TipPreset`   | `.fifteen`     |
-| `customTipPercent`  | `Double`      | `18.0`         |
-| `splitCount`        | `Int`         | `1`            |
-| `selectedCurrency`  | `Currency`    | `.nok`         |
+| Property            | Type            | Default        |
+|---------------------|-----------------|----------------|
+| `billAmountText`    | `String`        | `""`           |
+| `selectedPreset`    | `TipPreset`     | `.fifteen`     |
+| `customTipPercent`  | `Double`        | `18.0`         |
+| `splitCount`        | `Int`           | `1`            |
+| `selectedCurrency`  | `Currency`      | `.nok`         |
+| `splitMode`         | `SplitMode`     | `.equal`       |
+| `personSplits`      | `[PersonSplit]` | One empty row per person |
+
+- **`splitCount` is `personSplits.count`**, so the two always agree. Setting it (the stepper, the restored preference, or a direct assignment) clamps it to 1…20 (`splitCountRange`), then appends empty rows or removes rows from the end, typed or not. The array is never rebuilt, so the rows it keeps keep their `id` and text, and the person numbers stay 1…`splitCount` in order.
+- **Rows exist in both modes.** Equal mode only hides them, so typed amounts survive mode switches, and − in either mode discards the last row's amount.
 
 ### Computed Properties
 
@@ -108,6 +113,8 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 | `totalAmount`         | `Double`          | `totalMinorUnits` in whole units |
 | `perPersonAmount`     | `Double`          | `totalAmount / Double(splitCount)`; Per Person ↑ rounds it up to a whole unit |
 | `calculation`         | `TipCalculation`  | Snapshot struct bundling all the above |
+| `billPortionsMinorUnits` | `[Int]`        | Each row's part of the bill before tip, one per row in `personSplits` order, in either mode. A typed row gets its `AmountParser` value (0 while rejected, above the cap included). The automatic rows split max(0, bill − the typed rows) with `ShareAllocator` equal weights, leftover units to the lowest-numbered. Bill "1250", 4 people, Person 1 "150" → [15_000, 36_667, 36_667, 36_666] |
+| `automaticAmountText(for:)` (method) | `String` | A row's portion without the symbol, through `CurrencyFormatter.formatWithoutSymbol(minorUnits:currency:)`: what an automatic row previews, "1 500,00" (NOK) or "1,500.00" (USD, KES). Display only: never written into `amountText`, never parsed |
 
 "In whole units" means through `selectedCurrency.amount(minorUnits:)`, the one minor-units → `Double` conversion.
 
@@ -133,6 +140,7 @@ init(defaults: UserDefaults = .standard) {
 - **Store:** `init(defaults:)` takes the `UserDefaults` the 5 preferences live in. The app and previews call `CalculatorViewModel()`, which uses `.standard`; tests pass a new suite per view model (`TestDefaults`, see `TESTING.md`)
 - **Load:** `init(defaults:)` reads the `@AppStorage` values and sets the corresponding `@Observable` properties
 - **Save:** `savePreferences()` writes current state back; called on relevant property changes
+- **Not saved:** `splitMode` and `personSplits` (Q4), so every launch starts in Equal mode with one empty row per restored person. A saved head count outside 1…20 restores as the nearest end
 
 ---
 
@@ -146,7 +154,7 @@ Value types for custom splits (Phase 2A). Amounts are `Int` minor units (øre, c
 | `PersonSplit` | Input: one custom-split row | `id` (`UUID`), `personNumber` (1-based), `amountText` (as typed, empty by default), `label` ("Person N"), `isAutomatic` |
 | `PersonShare` | Output: what one person pays | `personNumber`, `billPortionMinorUnits`, `shareMinorUnits`, `currency`; `billPortionAmount` and `shareAmount` as `Double` for display, through `Currency.amount(minorUnits:)` |
 
-- **Typed or automatic.** A row is automatic when its text is empty after trimming whitespace, and typed otherwise, even when `AmountParser` rejects the text (`"0"` is typed). `PersonSplit.isAutomatic(_:)` is the one definition, and it takes a bare `String`, so a view that has only the text uses the same rule. There's no `isEdited` flag. An automatic row's amount is computed and never written into `amountText`.
+- **Typed or automatic.** A row is automatic when its text is empty after trimming whitespace, and typed otherwise, even when `AmountParser` rejects the text (`"0"` is typed). `PersonSplit.isAutomatic(_:)` is the one definition, and it takes a bare `String`, so a view that has only the text uses the same rule. There's no `isEdited` flag. An automatic row's amount is computed (`CalculatorViewModel.billPortionsMinorUnits`) and never written into `amountText`.
 - **Row identity.** `PersonSplit.id` is a `UUID`, not the index or the person number, so `ForEach` and focus follow a row while its text changes, and a removed row's id is never reused. `personNumber` is stored, because rows are only appended or removed at the end.
 - **Result identity and scale.** `PersonShare`s are rebuilt on every change, so their `id` is the person number, which every rebuild keeps. Each share stores its currency, so the `Double` accessors always use the right scale.
 
