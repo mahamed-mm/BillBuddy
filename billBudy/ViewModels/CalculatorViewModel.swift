@@ -19,27 +19,54 @@ final class CalculatorViewModel {
     @ObservationIgnored @AppStorage private var savedRounding: Int
 
     // MARK: - Computed Properties
-    var billAmount: Double { AmountParser.amount(from: billAmountText) ?? 0.0 }
+    // The bill, tip, and total are exact Int minor units of `selectedCurrency` (øre, cents). Each
+    // `Double` amount derives from them through `Currency.amount(minorUnits:)`, for display.
+
+    /// The bill in minor units, the one source of every result: 0 for text `AmountParser` rejects,
+    /// including text above its cap. The text itself stays as typed.
+    var billMinorUnits: Int { AmountParser.minorUnits(from: billAmountText, currency: selectedCurrency) ?? 0 }
+    var billAmount: Double { selectedCurrency.amount(minorUnits: billMinorUnits) }
     var effectiveTipPercent: Double { selectedPreset == .custom ? customTipPercent : selectedPreset.percentage }
 
-    private var rawTipAmount: Double { billAmount * effectiveTipPercent / 100 }
-    private var rawTotalAmount: Double { billAmount + rawTipAmount }
-    private var rawPerPersonAmount: Double { splitCount > 0 ? rawTotalAmount / Double(splitCount) : rawTotalAmount }
+    /// 50 %, the top of the custom tip slider, in basis points.
+    private static let maxTipBasisPoints = 5_000
 
-    var tipAmount: Double {
+    /// `effectiveTipPercent` in basis points (hundredths of a percent), rounded half-up, so every
+    /// percent with up to 2 decimals is exact. The custom slider's range is 0–50 %, so a percent
+    /// outside it (only a test or a corrupted saved value can set one) counts as the nearest end,
+    /// and NaN counts as 0.
+    private var tipBasisPoints: Int {
+        let basisPoints = (effectiveTipPercent * 100).rounded(.toNearestOrAwayFromZero)
+        guard basisPoints > 0 else { return 0 } // false for NaN too
+        return Int(min(basisPoints, Double(Self.maxTipBasisPoints)))
+    }
+
+    /// The tip before Tip ↑: bill × percent, rounded half-up to 1 minor unit, in Int math only.
+    /// The bill is at most `AmountParser.maxMinorUnits` (10^15) and the percent at most 5 000
+    /// basis points, so the product is at most 5 × 10^18 and can't overflow.
+    private var rawTipMinorUnits: Int {
+        // 10 000 basis points are 100 %; adding half of that before dividing rounds half-up.
+        (billMinorUnits * tipBasisPoints + 5_000) / 10_000
+    }
+
+    /// The tip in minor units, rounded half-up to 1 minor unit; Tip ↑ rounds it up to a whole unit.
+    var tipMinorUnits: Int {
         switch selectedRounding {
-        case .roundTip: rawTipAmount.rounded(.up)
-        default: rawTipAmount
+        case .roundTip: ShareAllocator.roundedUpToWholeUnit(rawTipMinorUnits, currency: selectedCurrency)
+        default: rawTipMinorUnits
         }
     }
 
-    var totalAmount: Double {
+    /// The bill plus the tip in minor units; Total ↑ rounds it up to a whole unit.
+    var totalMinorUnits: Int {
         switch selectedRounding {
-        case .roundTip: billAmount + tipAmount
-        case .roundTotal: rawTotalAmount.rounded(.up)
-        default: rawTotalAmount
+        case .roundTotal: ShareAllocator.roundedUpToWholeUnit(billMinorUnits + rawTipMinorUnits, currency: selectedCurrency)
+        default: billMinorUnits + tipMinorUnits
         }
     }
+
+    var tipAmount: Double { selectedCurrency.amount(minorUnits: tipMinorUnits) }
+    var totalAmount: Double { selectedCurrency.amount(minorUnits: totalMinorUnits) }
 
     var perPersonAmount: Double {
         switch selectedRounding {

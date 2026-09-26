@@ -65,12 +65,61 @@ struct AmountParserTests {
         }
     }
 
+    // Int.max minor units and just above it: all far above the cap, so none of them parses.
     @Test("Minor units return nil instead of overflowing Int")
     func minorUnitsOverflow() {
-        #expect(AmountParser.minorUnits(from: "92233720368547758.07", currency: .nok) == Int.max)
-        #expect(AmountParser.minorUnits(from: "92233720368547758.074", currency: .nok) == Int.max)
+        #expect(AmountParser.minorUnits(from: "92233720368547758.07", currency: .nok) == nil)
+        #expect(AmountParser.minorUnits(from: "92233720368547758.074", currency: .nok) == nil)
         #expect(AmountParser.minorUnits(from: "92233720368547758.075", currency: .nok) == nil)
         #expect(AmountParser.minorUnits(from: "92233720368547758.08", currency: .nok) == nil)
+    }
+
+    @Test("The cap is 10^15 minor units: 10 000 000 000 000,00 kr")
+    func capValue() {
+        #expect(AmountParser.maxMinorUnits == 1_000_000_000_000_000)
+    }
+
+    @Test("Amounts up to the cap parse, including ones that round to it", arguments: [
+        ("10000000000000", 1_000_000_000_000_000), ("10000000000000,00", 1_000_000_000_000_000),
+        ("10000000000000.004", 1_000_000_000_000_000), // the cut-off 0,4 øre rounds down to the cap
+        ("9999999999999,995", 1_000_000_000_000_000),  // half an øre rounds up to exactly the cap
+        ("0010000000000000", 1_000_000_000_000_000),   // leading zeros don't count
+        ("9999999999999,99", 999_999_999_999_999),
+    ])
+    func minorUnitsUpToCap(text: String, expected: Int) {
+        for currency in Currency.allCases where currency.fractionDigits == 2 {
+            #expect(AmountParser.minorUnits(from: text, currency: currency) == expected)
+        }
+    }
+
+    @Test("Amounts above the cap are rejected like any invalid text", arguments: [
+        "10000000000000,01", "92233720368547758,01",
+        "10000000000000,005", // half an øre rounds up past the cap
+        "10000000000001", "99999999999999",
+    ])
+    func minorUnitsAboveCap(text: String) {
+        for currency in Currency.allCases where currency.fractionDigits == 2 {
+            #expect(AmountParser.minorUnits(from: text, currency: currency) == nil)
+        }
+    }
+
+    @Test("The fractionDigits seam rounds half-up at any scale", arguments: [
+        (",5", 0, 1), ("12,49", 0, 12), ("12,5", 0, 13), ("12", 0, 12),
+        ("1,0005", 3, 1_001), ("1,2344", 3, 1_234), ("1,2345", 3, 1_235), ("12", 3, 12_000), (",5", 3, 500),
+        ("12,50", 2, 1_250), ("1.005", 2, 101),
+        (",5", -1, 1), // a negative scale counts as 0
+    ])
+    func minorUnitsAtScale(text: String, fractionDigits: Int, expected: Int) {
+        #expect(AmountParser.minorUnits(from: text, fractionDigits: fractionDigits) == expected)
+    }
+
+    @Test("The cap is the same number of minor units at every scale")
+    func capAtEveryScale() {
+        #expect(AmountParser.minorUnits(from: "1000000000000000", fractionDigits: 0) == 1_000_000_000_000_000)
+        #expect(AmountParser.minorUnits(from: "1000000000000000,5", fractionDigits: 0) == nil)
+        #expect(AmountParser.minorUnits(from: "1000000000000001", fractionDigits: 0) == nil)
+        #expect(AmountParser.minorUnits(from: "1000000000000", fractionDigits: 3) == 1_000_000_000_000_000)
+        #expect(AmountParser.minorUnits(from: "1000000000000,0005", fractionDigits: 3) == nil)
     }
 
     @Test("Amounts beyond Double's range return nil, not infinity")

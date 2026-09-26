@@ -375,4 +375,36 @@ struct CurrencyTests {
         #expect(Currency.kes.symbol == "KSh")
         #expect(Currency.kes.locale == "en_KE")
     }
+
+    // MARK: Minor units → Double
+
+    @Test("amount(minorUnits:) gives whole units in every 2-decimal currency", arguments: [
+        (0, 0.0), (1, 0.01), (29, 0.29), (101, 1.01), (500, 5.0), (3_830, 38.3), (42_167, 421.67),
+        (99_999_999, 999_999.99), (1_000_000_000_000_000, 10_000_000_000_000.0),
+    ])
+    func amountFromMinorUnits(minorUnits: Int, expected: Double) {
+        for currency in Currency.allCases where currency.fractionDigits == 2 {
+            #expect(currency.amount(minorUnits: minorUnits) == expected)
+        }
+    }
+
+    @Test("The scale comes from fractionDigits")
+    func scaleFromFractionDigits() {
+        #expect(Currency.amount(minorUnits: 1_234, fractionDigits: 0) == 1_234.0)
+        #expect(Currency.amount(minorUnits: 1_234, fractionDigits: 1) == 123.4)
+        #expect(Currency.amount(minorUnits: 1_234, fractionDigits: 3) == 1.234)
+        #expect(Currency.amount(minorUnits: 5, fractionDigits: 3) == 0.005)
+    }
+
+    @Test("A negative scale counts as 0")
+    func negativeScale() {
+        #expect(Currency.amount(minorUnits: 1_234, fractionDigits: -1) == 1_234.0)
+    }
+
+    @Test("Gives the Double nearest the decimal amount at both documented bounds: 2^53 minor units and 22 digits")
+    func exactAtBounds() {
+        #expect(Currency.amount(minorUnits: 1 << 53, fractionDigits: 0) == 9_007_199_254_740_992.0)
+        #expect(Currency.amount(minorUnits: 1 << 53, fractionDigits: 2) == 90_071_992_547_409.92)
+        #expect(Currency.amount(minorUnits: 12_345, fractionDigits: 22) == 1.2345e-18)
+    }
 }

@@ -12,7 +12,7 @@ billBudy/
 ├── ContentView.swift                    # Root view
 ├── Models/
 │   ├── TipPreset.swift                  # Enum: zero/five/ten/fifteen/twenty/twentyFive/custom
-│   ├── Currency.swift                   # Enum: nok/usd/kes with symbol, flag, locale, fractionDigits
+│   ├── Currency.swift                   # Enum: nok/usd/kes with symbol, flag, locale, fractionDigits, amount(minorUnits:)
 │   ├── TipCalculation.swift             # Struct: computed result snapshot
 │   ├── RoundingMode.swift               # Enum: none/roundTip/roundTotal/roundPerPerson
 │   ├── SplitMode.swift                  # Enum: equal/custom
@@ -37,7 +37,7 @@ billBudy/
 ├── Services/
 │   ├── HapticManager.swift              # enum namespace, wraps UIImpactFeedbackGenerator
 │   ├── CurrencyFormatter.swift          # enum namespace, cached NumberFormatters per locale
-│   ├── AmountParser.swift               # enum namespace, parses "," or "." decimal input on any region
+│   ├── AmountParser.swift               # enum namespace, parses "," or "." decimal input on any region, up to 10^15 minor units
 │   └── ShareAllocator.swift             # enum namespace, splits Int minor units exactly by weight, rounds up to whole units
 ├── DesignSystem/
 │   ├── AppColors.swift                  # Color tokens (bbTeal, bbCardBackground, etc.)
@@ -63,6 +63,7 @@ billBudy/
 | `enum` namespaces for stateless services | `HapticManager`, `CurrencyFormatter`, `AmountParser`, and `ShareAllocator` are pure utility — enum prevents accidental instantiation |
 | Cached `NumberFormatter` instances | `NumberFormatter` is expensive to create; one instance per locale is reused |
 | Region-independent amount parsing | `AmountParser` accepts "," or "." on any region with no `NumberFormatter`, so the same text gives the same amount everywhere; minor units come from the digits, never through `Double` |
+| Exact money in `Int` minor units | The bill, tip, and total are `Int` minor units (øre, cents), and their math has no `Double` step: the tip is the bill times the percent in integer basis points, rounded half-up to 1 minor unit, and Tip ↑ / Total ↑ use `ShareAllocator.roundedUpToWholeUnit`. `ShareAllocator` splits amounts by largest remainder, ties to the lowest index, with full-width products, so shares add up exactly. `AmountParser.minorUnits` rejects amounts above 10^15 minor units, so no sum or product can overflow `Int`. `Double` appears only for display, through `Currency.amount(minorUnits:)`, which is exact up to 2^53 minor units. Equal-mode `perPersonAmount` still divides `totalAmount` as a `Double` |
 
 ---
 
@@ -98,12 +99,17 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 
 | Property              | Type              | Derivation |
 |-----------------------|-------------------|------------|
-| `billAmount`          | `Double`          | Parsed from `billAmountText` by `AmountParser` ("," or "." decimal; 0.0 if invalid) |
+| `billMinorUnits`      | `Int`             | `AmountParser.minorUnits(from: billAmountText, currency: selectedCurrency)` ("," or "." decimal, half-up to 1 minor unit), or 0 if rejected, above the 10^15 cap included. The one source of every result; the text stays as typed |
+| `billAmount`          | `Double`          | `billMinorUnits` in whole units: "1.005" → 101 → 1.01 |
 | `effectiveTipPercent` | `Double`          | Preset's percentage, or `customTipPercent` if `.custom` |
-| `tipAmount`           | `Double`          | `billAmount * effectiveTipPercent / 100` |
-| `totalAmount`         | `Double`          | `billAmount + tipAmount` |
-| `perPersonAmount`     | `Double`          | `totalAmount / Double(splitCount)` |
+| `tipMinorUnits`       | `Int`             | `billMinorUnits` × the percent in basis points (0.01 %, clamped to the slider's 0–50 %) / 10 000, rounded half-up to 1 minor unit; Tip ↑ rounds it up to a whole unit |
+| `totalMinorUnits`     | `Int`             | `billMinorUnits + tipMinorUnits`; Total ↑ rounds it up to a whole unit |
+| `tipAmount`           | `Double`          | `tipMinorUnits` in whole units |
+| `totalAmount`         | `Double`          | `totalMinorUnits` in whole units |
+| `perPersonAmount`     | `Double`          | `totalAmount / Double(splitCount)`; Per Person ↑ rounds it up to a whole unit |
 | `calculation`         | `TipCalculation`  | Snapshot struct bundling all the above |
+
+"In whole units" means through `selectedCurrency.amount(minorUnits:)`, the one minor-units → `Double` conversion.
 
 ### Persistence Bridge
 
@@ -138,7 +144,7 @@ Value types for custom splits (Phase 2A). Amounts are `Int` minor units (øre, c
 |------|------|---------|
 | `SplitMode` | Enum: `.equal` (0), `.custom` (1) | `displayText` "Equal" / "Custom" |
 | `PersonSplit` | Input: one custom-split row | `id` (`UUID`), `personNumber` (1-based), `amountText` (as typed, empty by default), `label` ("Person N"), `isAutomatic` |
-| `PersonShare` | Output: what one person pays | `personNumber`, `billPortionMinorUnits`, `shareMinorUnits`, `currency`; `billPortionAmount` and `shareAmount` as `Double` for display |
+| `PersonShare` | Output: what one person pays | `personNumber`, `billPortionMinorUnits`, `shareMinorUnits`, `currency`; `billPortionAmount` and `shareAmount` as `Double` for display, through `Currency.amount(minorUnits:)` |
 
 - **Typed or automatic.** A row is automatic when its text is empty after trimming whitespace, and typed otherwise, even when `AmountParser` rejects the text (`"0"` is typed). `PersonSplit.isAutomatic(_:)` is the one definition, and it takes a bare `String`, so a view that has only the text uses the same rule. There's no `isEdited` flag. An automatic row's amount is computed and never written into `amountText`.
 - **Row identity.** `PersonSplit.id` is a `UUID`, not the index or the person number, so `ForEach` and focus follow a row while its text changes, and a removed row's id is never reused. `personNumber` is stored, because rows are only appended or removed at the end.
