@@ -9,4 +9,7 @@ enum AppSpacing {
     static let xxl: CGFloat = 48
     static let cornerRadius: CGFloat = 16
     static let cardRadius: CGFloat = 20
+
+    /// The HIG's minimum tap target. Apply it as `minWidth`/`minHeight`, so targets grow with Dynamic Type.
+    static let minTapTarget: CGFloat = 44
 }
