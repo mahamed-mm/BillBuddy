@@ -247,7 +247,7 @@ The label column is the same width in every row, so all fields line up. At large
   - **Equal mode:** `Spacer()`, `Button("Done")`. Identical to today.
   - **Custom mode:** `Button` with `Image(systemName: "chevron.up")` (Previous), `Button` with `Image(systemName: "chevron.down")` (Next), `Spacer()`, `Button("Done")`.
   - **Focus order:** bill → Person 1 → … → Person N. Previous is `.disabled` on the bill, and Next is `.disabled` on Person N. Done sets `focusedField = nil`.
-  - **Color.** The items use the app's AccentColor (#00E5CC, the same value as `bbTealText` in dark mode). There's no view-level `.tint`, which may not reach keyboard-toolbar items; see the developer note in §5.
+  - **Color.** The items use the app's AccentColor (#00E5CC, the same value as `bbTealText` in dark mode). There's no view-level `.tint`, which may not reach keyboard-toolbar items; see the AccentColor note in §5.
   - No other controls go in the toolbar. Automatic rows already split the rest.
 - **Scroll to focus.** Wrap the content in `ScrollViewReader`. The `.id` sits on the **field box**, not the whole row:
   - `BillInputView`'s field: `.id(CalculatorField.bill)`
@@ -584,7 +584,7 @@ Nothing newer is used: no `TextSelection`, `ScrollPosition`, or `onScrollGeometr
 
 ## 5. New tokens
 
-All five are **(proposed)** and are listed in `docs/STYLE-GUIDE.md` with that mark. They land in `DesignSystem/` with 2A-9, the first UI task that uses them.
+All five landed in `DesignSystem/` and `docs/STYLE-GUIDE.md` with task 2A-18, before the first UI task that uses them.
 
 | Token | Light | Dark | Usage | Why no existing token fits |
 |---|---|---|---|---|
@@ -606,7 +606,7 @@ All five are **(proposed)** and are listed in `docs/STYLE-GUIDE.md` with that ma
 
 Status icons are non-text elements, which need 3:1. They pass in dark (≥ 6.0:1) and in light (≥ 3.3:1).
 
-**Developer note for 2A-9 (not a spec requirement).** Give AccentColor (`billBudy/Assets.xcassets/AccentColor.colorset`) a light appearance of `#00695C` and keep `#00E5CC` for dark. The caret, keyboard-toolbar items, and the dialog's Cancel button all use AccentColor, and a view-level `.tint` may not reach keyboard-toolbar items. At runtime (dark) nothing changes.
+**AccentColor note (amended 2026-09-26, TASKS Q10).** AccentColor (`billBudy/Assets.xcassets/AccentColor.colorset`) stays a single `#00E5CC` in every appearance. The caret, keyboard-toolbar items, and the dialog's Cancel button all use it, and a view-level `.tint` may not reach keyboard-toolbar items. An earlier version of this note asked for a light appearance of `#00695C`, but on iOS 17 the keyboard toolbar resolves AccentColor from the device's appearance, outside the forced-dark window, so on a light-mode device "Done" turned `#00695C` on the dark toolbar (about 2.8:1). Light previews therefore keep the bright teal caret.
 
 ---
 
@@ -614,7 +614,7 @@ Status icons are non-text elements, which need 3:1. They pass in dark (≥ 6.0:1
 
 ### Spec-wide (design-reviewer Mode A; code-reviewer greps)
 
-- [ ] Only tokens from STYLE-GUIDE.md, including the five marked (proposed). The only literal is the documented 1.5 pt chip border width.
+- [ ] Only tokens from STYLE-GUIDE.md, including the five 2A tokens. The only literal is the documented 1.5 pt chip border width.
 - [ ] Every status (S1a–S5), the automatic state, the invalid state, and the selected chip each have a non-color cue.
 - [ ] Every new tap target is ≥ 44×44 pt and uses `minWidth`/`minHeight`, so it grows with text and never clips its glyph.
 - [ ] Layouts are defined for every text size: `SplitModeToggle` and the footer at AX sizes; `PersonSplitRow` stacked from `.xxLarge`; `BreakdownRow` at AX sizes; the pinned `SplitStatusView` capped at AX1.

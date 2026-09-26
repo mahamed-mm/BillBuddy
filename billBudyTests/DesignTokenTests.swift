@@ -66,10 +66,11 @@ struct DesignTokenSpacingTests {
 @Suite("AccentColor asset")
 struct AccentColorTests {
 
-    @Test("Light is #00695C; dark and unspecified keep #00E5CC")
+    @Test("Light, dark, and unspecified are all #00E5CC")
     func appearances() throws {
         let accent = try #require(UIColor(named: "AccentColor"))
-        #expect(accent.hex(for: .light) == "#00695C")
+        // No light variant: iOS 17 puts it on the dark keyboard toolbar at 2.8:1 (TASKS Q10, 2A-18 [B1]).
+        #expect(accent.hex(for: .light) == "#00E5CC")
         #expect(accent.hex(for: .dark) == "#00E5CC")
         #expect(accent.hex(for: .unspecified) == "#00E5CC")
     }
