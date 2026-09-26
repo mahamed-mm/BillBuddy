@@ -174,11 +174,19 @@ BillBuddy development to-do list, organized by milestone.
 
 ### V2 Bug Fixes
 
-- [ ] **BF-1** Currency picker flags and rounding-row clipping on iOS 26 (reported 2026-09-25 from a simulator screenshot) · deps: —
+- [x] **BF-1** Currency picker flags and rounding-row clipping on iOS 26 (reported 2026-09-25 from a simulator screenshot) · deps: — · 9cd3765 + ab13cb8, code review APPROVED 5/5 and design review Mode B APPROVED in round 2 (round 1 [B1]: dead tap bands on the widened pills; found by both reviewers and CodeRabbit)
   - AC: every currency option shows a rendered flag and its full code (NOK, USD, KES), with no "?" boxes or truncation, at the default text size and AX5, in light and dark mode. Keep the native segmented control if the flags render in it; otherwise use a chip row with flags (product decision)
     - Resolved without an app change: the "?" boxes come from the iOS 26.3.1 Simulator runtime, whose emoji font file is missing (Safari shows the same boxes), and 9cd3765 traces the truncation to the same fallback glyphs. The unchanged `CurrencyPickerView` renders the Norwegian, US, and Kenyan flags correctly on iOS 17.5 (PM check, 2026-09-25), so the native segmented control stays
   - AC: no rounding pill is clipped at the content-padding edge, and all 4 are reachable at AX5
   - AC: currency selection, persistence, haptics, VoiceOver selection state, and tokens only as before; code review plus design review Mode B, with before/after screenshots
+  - Flags: no app change. Both variants of the iOS 26.3.1 Simulator runtime (arm64-only and universal, reinstalled 2026-09-26) ship the emoji font only as `Fonts/CoreAddition/AppleColorEmoji-160px.ttc`, while CoreText opens `Fonts/Core/AppleColorEmoji.ttc`, so every emoji renders as a "?" box (Safari too). The flags render correctly on iOS 17.5. Check flags on iOS 17.5 or a device.
+  - Backlog (from the BF-1 reviews):
+    - `TipPresetButton` has a `.clear` fill without `contentShape`, so taps on the empty chip area can miss (design N1, code N2). `TipSelectorView` still uses `LazyVGrid`, whose off-screen chips leave the accessibility tree at AX5 (code r2 N3). It keeps 2 columns at AX sizes, so "Custom" hyphenates (design r2 N6): reuse `columnCount(for:)` and an eager `Grid`.
+    - The rounding pills use `Capsule()`, while STYLE-GUIDE says chip radius is `cornerRadius` (16 pt) (design N2).
+    - Rounding VoiceOver labels read "Tip up arrow rounding". Suggested: "Round tip up" and so on, with the `.isSelected` trait and `.isHeader` on "Rounding" (design N3).
+    - In light previews, selected chip text (`bbTeal` on `bbSelectedChip`) is 1.4:1 (design N4). Forced dark hides it at runtime; 2A-18's `bbTealText` addresses it.
+    - ARCHITECTURE's view hierarchy omits `RoundingSelectorView` and says "TipPresetButton ×6" (there are 7) (code N4).
+    - The UI harness `LazyTreeProbeUITests` needs `.firstMatch` on its "Results" query (scratch harness only).
 
 ### Phase 2A — Unequal Splits
 
@@ -203,7 +211,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 - [x] **2A-0** Design spec `docs/design/2A-unequal-splits.md` (ui-designer → design-reviewer Mode A) (~3h) · deps: — (Q1–Q9 decided) · 1ed3806, Mode A APPROVED in round 2 (round 1: [B1]–[B3] AX-size layout)
   - AC: design-reviewer returns APPROVED (Mode A) within 3 rounds
   - AC: specifies the split-mode control, `PersonSplitRow`, a left/over/balanced indicator that uses text + icon (never color alone), and the results-card breakdown, including the invalid state (no per-person amounts, Q6) and the Per Person ↑ surplus line (Q5)
-  - AC: specifies the custom-mode rows (Q7): the prefilled equal split and its text format, what a row added by + contains, and whether untouched prefilled rows follow bill or count changes, including a switch to Custom before a bill is typed
+  - AC: specifies the custom-mode rows (Q7): automatic rows with equal-share previews in the display-only, symbol-free locale format (two fraction digits and grouping), never prefilled or written to `amountText`; what a row added by + contains; how untouched rows follow bill or count changes; and a switch to Custom before a bill is typed
   - AC: specifies the 1-person case, the keyboard flow across the bill and person fields (one Done, Next/Previous), the AX5 row layout, a VoiceOver label and value per control, and Reduce Motion
   - AC: lists new tokens (for example a warning color) with light and dark values, or states "none"; uses only iOS 17 APIs
 - [x] **2A-1** `AmountParser`: locale-tolerant amount parsing that fixes comma-decimal bill input (~1.5h) · deps: — · ‖ · b33aca0, code review APPROVED 5/5, 0 fix rounds
@@ -227,8 +235,8 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 - [x] **2A-4** `ShareAllocator`: exact largest-remainder allocation in minor units (~2h) · deps: — · ‖ · b374867, code review APPROVED 5/5, 0 fix rounds
   - AC: pure `enum ShareAllocator` in `Services/`, Int minor units in and out; the minor-unit scale comes from `Currency.fractionDigits` (added by 2A-1; 2 for NOK, USD, and KES)
   - AC: parameterized test over n = 1…20 × totals {0, 1, 99, 100, 101, 11_500, 99_999_999}: `sum == total` exactly (Int equality, no tolerance), every share ≥ 0, count == n; with equal weights, max − min ≤ 1
-  - AC: `allocate(10_000, [1, 1, 1]) == [3334, 3333, 3333]`; leftover units go to the largest remainders, ties to the lowest index (also the Q7 prefill rule)
-  - AC: each weighted share is within 1 minor unit of total × wᵢ / Σw; `allocate(1_150, [333, 333, 334]) == [383, 383, 384]`
+  - AC: `allocate(10_000, weights: [1, 1, 1]) == [3334, 3333, 3333]`; leftover units go to the largest remainders, ties to the lowest index (also the Q7 automatic-row rule)
+  - AC: each weighted share is within 1 minor unit of total × wᵢ / Σw; `allocate(1_150, weights: [333, 333, 334]) == [383, 383, 384]`
   - AC: all-zero weights → equal split; empty weights → `[]`; never divides by zero
   - AC: whole-unit round-up helper: 250 → 300, 300 → 300, 0 → 0
 - [ ] **2A-5** ViewModel: tip and total in exact minor units, with an input cap (~2h) · deps: 2A-1, 2A-2, 2A-4
@@ -297,7 +305,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
   - AC: TESTING.md's test count matches `xcodebuild test`, and it adds split and parser test tables, manual QA items for custom splits and comma-decimal regions, and working destination and `-only-testing` examples
   - AC: CHANGELOG `[Unreleased]` has Added (unequal splits), Changed (iOS 17.0 target), and Fixed (half-cent tip rounding, plus comma decimals unless the 2.0.1 hotfix already lists it under `[2.0.1]`, Q8), with no duplicate entries
   - AC: manual QA with Region = Norway, on the default simulator and the iOS 17.5 one (2A-15): bill "12,50" computes, and a 3-person custom split works end to end in all 4 rounding modes, starting from the automatic equal split
-- [ ] **2A-15** Lower deployment target to iOS 17.0 (~1.5h) · deps: — · ‖
+- [x] **2A-15** Lower deployment target to iOS 17.0 (~1.5h) · deps: — · ‖ · 9d4c6b8, code review APPROVED 5/5, 0 fix rounds; idle cold launch (PM, 2026-09-26, iPhone 15 on iOS 17.5, 1 simulator booted, no builds): cmd→first frame 0.520–0.654 s, median 0.548 s (anim→first median 0.320 s)
   - AC: `IPHONEOS_DEPLOYMENT_TARGET = 17.0` in every build configuration that sets it: today the project-level Debug and Release entries (both 26.2); any target-level setting for billBudy or billBudyTests says 17.0 too (none today, both inherit)
   - AC: the build has 0 compiler warnings and all tests pass
   - AC: any API newer than iOS 17 that the compiler flags is replaced or gated with `#available` (a grep for common iOS 18/26 APIs finds none today, and the PM's 2026-09-25 build with a 17.0 override had 0 errors and ran)
@@ -337,6 +345,10 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 - [2A-4 N4] Add an ARCHITECTURE.md decision row: exact splits in Int minor units, largest remainder, ties to the lowest index, full-width products, no `Double` (2A-14 can take it).
 - [spec §7] Pre-existing tap targets: tip chips and rounding pills are about 36–38 pt tall, under the 44 pt minimum (`minTapTarget` lands in 2A-18). Tip chips also have a `.clear` fill without `contentShape`, so their hit area is roughly the text line.
 - [spec §7] The split stepper's VoiceOver says "1 people"; it needs a singular/plural form.
+- [2A-15 review] Currency symbol mismatch: the KES bill field shows "KSh" (`Currency.symbol`), while the results card shows "Ksh" (CLDR en_KE). Pick one.
+- [2A-15 review] The bill placeholder reads "0.00" even when the decimal pad types "," (Norwegian region). Localize it.
+- [2A-15 review] CHANGELOG's 2A-15 entry ends with a verification sentence that belongs in a PR body, not release notes. Trim it in 2A-14.
+- [2A-15 review] TESTING.md (2A-14): Xcode 26.2 refuses every iOS simulator destination, 17.5 included, and actool fails, unless an iOS 26.x runtime is installed. The iOS 26.3.1 runtime (both variants) can't render emoji, so check flags on iOS 17.5.
 
 ### Phase 2B — Live Currency Conversion
 
