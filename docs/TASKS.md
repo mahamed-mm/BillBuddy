@@ -203,7 +203,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 - [x] **2A-0** Design spec `docs/design/2A-unequal-splits.md` (ui-designer → design-reviewer Mode A) (~3h) · deps: — (Q1–Q9 decided) · 1ed3806, Mode A APPROVED in round 2 (round 1: [B1]–[B3] AX-size layout)
   - AC: design-reviewer returns APPROVED (Mode A) within 3 rounds
   - AC: specifies the split-mode control, `PersonSplitRow`, a left/over/balanced indicator that uses text + icon (never color alone), and the results-card breakdown, including the invalid state (no per-person amounts, Q6) and the Per Person ↑ surplus line (Q5)
-  - AC: specifies the custom-mode rows (Q7, automatic-rows model): an empty row is automatic and shows its equal share of what the typed rows leave as a display-only preview (format per spec §4.5, never written to `amountText`); it also specifies what a row added by + contains, how untouched automatic rows follow bill or count changes, and a switch to Custom before a bill is typed
+  - AC: specifies the custom-mode rows (Q7): automatic rows with equal-share previews in the display-only, symbol-free locale format (two fraction digits and grouping), never prefilled or written to `amountText`; what a row added by + contains; how untouched rows follow bill or count changes; and a switch to Custom before a bill is typed
   - AC: specifies the 1-person case, the keyboard flow across the bill and person fields (one Done, Next/Previous), the AX5 row layout, a VoiceOver label and value per control, and Reduce Motion
   - AC: lists new tokens (for example a warning color) with light and dark values, or states "none"; uses only iOS 17 APIs
 - [x] **2A-1** `AmountParser`: locale-tolerant amount parsing that fixes comma-decimal bill input (~1.5h) · deps: — · ‖ · b33aca0, code review APPROVED 5/5, 0 fix rounds
@@ -227,7 +227,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 - [x] **2A-4** `ShareAllocator`: exact largest-remainder allocation in minor units (~2h) · deps: — · ‖ · b374867, code review APPROVED 5/5, 0 fix rounds
   - AC: pure `enum ShareAllocator` in `Services/`, Int minor units in and out; the minor-unit scale comes from `Currency.fractionDigits` (added by 2A-1; 2 for NOK, USD, and KES)
   - AC: parameterized test over n = 1…20 × totals {0, 1, 99, 100, 101, 11_500, 99_999_999}: `sum == total` exactly (Int equality, no tolerance), every share ≥ 0, count == n; with equal weights, max − min ≤ 1
-  - AC: `allocate(10_000, weights: [1, 1, 1]) == [3334, 3333, 3333]`; leftover units go to the largest remainders, ties to the lowest index (also the automatic-row leftover rule, Q7)
+  - AC: `allocate(10_000, weights: [1, 1, 1]) == [3334, 3333, 3333]`; leftover units go to the largest remainders, ties to the lowest index (also the Q7 automatic-row rule)
   - AC: each weighted share is within 1 minor unit of total × wᵢ / Σw; `allocate(1_150, weights: [333, 333, 334]) == [383, 383, 384]`
   - AC: all-zero weights → equal split; empty weights → `[]`; never divides by zero
   - AC: whole-unit round-up helper: 250 → 300, 300 → 300, 0 → 0
