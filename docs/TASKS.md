@@ -305,7 +305,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
   - AC: TESTING.md's test count matches `xcodebuild test`, and it adds split and parser test tables, manual QA items for custom splits and comma-decimal regions, and working destination and `-only-testing` examples
   - AC: CHANGELOG `[Unreleased]` has Added (unequal splits), Changed (iOS 17.0 target), and Fixed (half-cent tip rounding, plus comma decimals unless the 2.0.1 hotfix already lists it under `[2.0.1]`, Q8), with no duplicate entries
   - AC: manual QA with Region = Norway, on the default simulator and the iOS 17.5 one (2A-15): bill "12,50" computes, and a 3-person custom split works end to end in all 4 rounding modes, starting from the automatic equal split
-- [ ] **2A-15** Lower deployment target to iOS 17.0 (~1.5h) · deps: — · ‖
+- [x] **2A-15** Lower deployment target to iOS 17.0 (~1.5h) · deps: — · ‖ · 9d4c6b8, code review APPROVED 5/5, 0 fix rounds; idle cold launch (PM, 2026-09-26, iPhone 15 on iOS 17.5, 1 simulator booted, no builds): cmd→first frame 0.520–0.654 s, median 0.548 s (anim→first median 0.320 s)
   - AC: `IPHONEOS_DEPLOYMENT_TARGET = 17.0` in every build configuration that sets it: today the project-level Debug and Release entries (both 26.2); any target-level setting for billBudy or billBudyTests says 17.0 too (none today, both inherit)
   - AC: the build has 0 compiler warnings and all tests pass
   - AC: any API newer than iOS 17 that the compiler flags is replaced or gated with `#available` (a grep for common iOS 18/26 APIs finds none today, and the PM's 2026-09-25 build with a 17.0 override had 0 errors and ran)
@@ -345,6 +345,10 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 - [2A-4 N4] Add an ARCHITECTURE.md decision row: exact splits in Int minor units, largest remainder, ties to the lowest index, full-width products, no `Double` (2A-14 can take it).
 - [spec §7] Pre-existing tap targets: tip chips and rounding pills are about 36–38 pt tall, under the 44 pt minimum (`minTapTarget` lands in 2A-18). Tip chips also have a `.clear` fill without `contentShape`, so their hit area is roughly the text line.
 - [spec §7] The split stepper's VoiceOver says "1 people"; it needs a singular/plural form.
+- [2A-15 review] Currency symbol mismatch: the KES bill field shows "KSh" (`Currency.symbol`), while the results card shows "Ksh" (CLDR en_KE). Pick one.
+- [2A-15 review] The bill placeholder reads "0.00" even when the decimal pad types "," (Norwegian region). Localize it.
+- [2A-15 review] CHANGELOG's 2A-15 entry ends with a verification sentence that belongs in a PR body, not release notes. Trim it in 2A-14.
+- [2A-15 review] TESTING.md (2A-14): Xcode 26.2 refuses every iOS simulator destination, 17.5 included, and actool fails, unless an iOS 26.x runtime is installed. The iOS 26.3.1 runtime (both variants) can't render emoji, so check flags on iOS 17.5.
 
 ### Phase 2B — Live Currency Conversion
 
