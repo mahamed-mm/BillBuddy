@@ -14,7 +14,10 @@ billBudy/
 │   ├── TipPreset.swift                  # Enum: zero/five/ten/fifteen/twenty/twentyFive/custom
 │   ├── Currency.swift                   # Enum: nok/usd/kes with symbol, flag, locale, fractionDigits
 │   ├── TipCalculation.swift             # Struct: computed result snapshot
-│   └── RoundingMode.swift               # Enum: none/roundTip/roundTotal/roundPerPerson
+│   ├── RoundingMode.swift               # Enum: none/roundTip/roundTotal/roundPerPerson
+│   ├── SplitMode.swift                  # Enum: equal/custom
+│   ├── PersonSplit.swift                # Struct: one custom-split row (input), typed or automatic
+│   └── PersonShare.swift                # Struct: what one person pays (output), in Int minor units
 ├── ViewModels/
 │   └── CalculatorViewModel.swift        # @Observable, all business logic
 ├── Views/
@@ -55,7 +58,8 @@ billBudy/
 | `@Observable` over `ObservableObject` | Fine-grained property tracking without `@Published` boilerplate; iOS 17+ idiomatic |
 | Single `CalculatorViewModel` for V1 | All state lives on one screen — tip input, split count, currency, and results are tightly coupled |
 | `@Environment` injection | ViewModel created with `@State` at the App level, distributed to child views via `.environment()` |
-| `@ObservationIgnored` on `@AppStorage` | `@AppStorage` doesn't compose with `@Observable`; bridged manually in `init()` + `savePreferences()` |
+| `@ObservationIgnored` on `@AppStorage` | `@AppStorage` doesn't compose with `@Observable`; bridged manually in `init(defaults:)` + `savePreferences()` |
+| Injectable preferences store | `init(defaults: UserDefaults = .standard)`: the app and previews use `.standard`, and tests give each view model a new suite (`TestDefaults`), so results never depend on the simulator's saved preferences |
 | `enum` namespaces for stateless services | `HapticManager`, `CurrencyFormatter`, `AmountParser`, and `ShareAllocator` are pure utility — enum prevents accidental instantiation |
 | Cached `NumberFormatter` instances | `NumberFormatter` is expensive to create; one instance per locale is reused |
 | Region-independent amount parsing | `AmountParser` accepts "," or "." on any region with no `NumberFormatter`, so the same text gives the same amount everywhere; minor units come from the digits, never through `Double` |
@@ -74,7 +78,7 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 2. **ViewModel updates** — the corresponding stored property changes (`billAmountText`, `selectedPreset`, `customTipPercent`, `splitCount`, `selectedCurrency`)
 3. **Computed properties refire** — `@Observable` tracks which properties each view reads; only affected views re-render
 4. **Views display** — `tipAmount`, `totalAmount`, and `perPersonAmount` are shown via `CurrencyFormatter`
-5. **Persistence** — on relevant changes, `savePreferences()` writes to `@AppStorage` (currency, tip preset, split count, custom tip %)
+5. **Persistence** — on relevant changes, `savePreferences()` writes through `@AppStorage` to the store passed to `init(defaults:)` (currency, tip preset, split count, custom tip %, rounding)
 
 ---
 
@@ -104,14 +108,41 @@ User Input → ViewModel (stored properties) → Computed Properties → View (r
 ### Persistence Bridge
 
 ```swift
-@ObservationIgnored @AppStorage("savedCurrency")  private var savedCurrency: String = "nok"
-@ObservationIgnored @AppStorage("savedTip")        private var savedTip: Int = 3        // TipPreset rawValue
-@ObservationIgnored @AppStorage("savedSplit")       private var savedSplit: Int = 1
-@ObservationIgnored @AppStorage("savedCustomTip")  private var savedCustomTip: Double = 18.0
+@ObservationIgnored @AppStorage private var savedCurrency: String
+@ObservationIgnored @AppStorage private var savedTip: Int          // TipPreset rawValue
+@ObservationIgnored @AppStorage private var savedSplit: Int
+@ObservationIgnored @AppStorage private var savedCustomTip: Double
+@ObservationIgnored @AppStorage private var savedRounding: Int     // RoundingMode rawValue
+
+init(defaults: UserDefaults = .standard) {
+    _savedCurrency = AppStorage(wrappedValue: "nok", "savedCurrency", store: defaults)
+    _savedTip = AppStorage(wrappedValue: 3, "savedTip", store: defaults)
+    _savedSplit = AppStorage(wrappedValue: 1, "savedSplit", store: defaults)
+    _savedCustomTip = AppStorage(wrappedValue: 18.0, "savedCustomTip", store: defaults)
+    _savedRounding = AppStorage(wrappedValue: 0, "savedRounding", store: defaults)
+    // …then restores the @Observable properties from them
+}
 ```
 
-- **Load:** `init()` reads `@AppStorage` values and sets corresponding `@Observable` properties
+- **Store:** `init(defaults:)` takes the `UserDefaults` the 5 preferences live in. The app and previews call `CalculatorViewModel()`, which uses `.standard`; tests pass a new suite per view model (`TestDefaults`, see `TESTING.md`)
+- **Load:** `init(defaults:)` reads the `@AppStorage` values and sets the corresponding `@Observable` properties
 - **Save:** `savePreferences()` writes current state back; called on relevant property changes
+
+---
+
+## Split Models
+
+Value types for custom splits (Phase 2A). Amounts are `Int` minor units (øre, cents), scaled by `Currency.fractionDigits`.
+
+| Type | Role | Members |
+|------|------|---------|
+| `SplitMode` | Enum: `.equal` (0), `.custom` (1) | `displayText` "Equal" / "Custom" |
+| `PersonSplit` | Input: one custom-split row | `id` (`UUID`), `personNumber` (1-based), `amountText` (as typed, empty by default), `label` ("Person N"), `isAutomatic` |
+| `PersonShare` | Output: what one person pays | `personNumber`, `billPortionMinorUnits`, `shareMinorUnits`, `currency`; `billPortionAmount` and `shareAmount` as `Double` for display |
+
+- **Typed or automatic.** A row is automatic when its text is empty after trimming whitespace, and typed otherwise, even when `AmountParser` rejects the text (`"0"` is typed). `PersonSplit.isAutomatic(_:)` is the one definition, and it takes a bare `String`, so a view that has only the text uses the same rule. There's no `isEdited` flag. An automatic row's amount is computed and never written into `amountText`.
+- **Row identity.** `PersonSplit.id` is a `UUID`, not the index or the person number, so `ForEach` and focus follow a row while its text changes, and a removed row's id is never reused. `personNumber` is stored, because rows are only appended or removed at the end.
+- **Result identity and scale.** `PersonShare`s are rebuilt on every change, so their `id` is the person number, which every rebuild keeps. Each share stores its currency, so the `Double` accessors always use the right scale.
 
 ---
 

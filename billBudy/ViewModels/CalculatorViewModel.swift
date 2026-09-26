@@ -11,11 +11,12 @@ final class CalculatorViewModel {
     var selectedRounding: RoundingMode = .none
 
     // MARK: - Persistence Bridge
-    @ObservationIgnored @AppStorage("savedCurrency") private var savedCurrency: String = "nok"
-    @ObservationIgnored @AppStorage("savedTip") private var savedTip: Int = 3
-    @ObservationIgnored @AppStorage("savedSplit") private var savedSplit: Int = 1
-    @ObservationIgnored @AppStorage("savedCustomTip") private var savedCustomTip: Double = 18.0
-    @ObservationIgnored @AppStorage("savedRounding") private var savedRounding: Int = 0
+    // Keys, defaults, and the store are set in `init(defaults:)`.
+    @ObservationIgnored @AppStorage private var savedCurrency: String
+    @ObservationIgnored @AppStorage private var savedTip: Int
+    @ObservationIgnored @AppStorage private var savedSplit: Int
+    @ObservationIgnored @AppStorage private var savedCustomTip: Double
+    @ObservationIgnored @AppStorage private var savedRounding: Int
 
     // MARK: - Computed Properties
     var billAmount: Double { AmountParser.amount(from: billAmountText) ?? 0.0 }
@@ -60,7 +61,15 @@ final class CalculatorViewModel {
     }
 
     // MARK: - Init
-    init() {
+    /// Restores the saved preferences from `defaults`, and `savePreferences()` writes them back there.
+    /// The app and previews use `.standard`; tests pass a suite of their own.
+    init(defaults: UserDefaults = .standard) {
+        _savedCurrency = AppStorage(wrappedValue: "nok", "savedCurrency", store: defaults)
+        _savedTip = AppStorage(wrappedValue: 3, "savedTip", store: defaults)
+        _savedSplit = AppStorage(wrappedValue: 1, "savedSplit", store: defaults)
+        _savedCustomTip = AppStorage(wrappedValue: 18.0, "savedCustomTip", store: defaults)
+        _savedRounding = AppStorage(wrappedValue: 0, "savedRounding", store: defaults)
+
         if let currency = Currency(rawValue: savedCurrency) {
             selectedCurrency = currency
         }

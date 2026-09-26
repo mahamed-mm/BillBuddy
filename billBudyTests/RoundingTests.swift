@@ -5,10 +5,11 @@ import Testing
 
 @Suite("CalculatorViewModel — Rounding")
 struct RoundingTests {
+    private let defaults = TestDefaults()
 
     @Test("No rounding — existing behavior unchanged")
     func noRounding() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "95"
         vm.selectedPreset = .fifteen
         vm.selectedRounding = .none
@@ -18,7 +19,7 @@ struct RoundingTests {
 
     @Test("Round tip — $95 + 15% tip rounds tip from 14.25 to 15")
     func roundTip() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "95"
         vm.selectedPreset = .fifteen
         vm.selectedRounding = .roundTip
@@ -28,7 +29,7 @@ struct RoundingTests {
 
     @Test("Round total — $95 + 15% rounds total from 109.25 to 110")
     func roundTotal() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "95"
         vm.selectedPreset = .fifteen
         vm.selectedRounding = .roundTotal
@@ -38,7 +39,7 @@ struct RoundingTests {
 
     @Test("Round per person — $100 + 15% split 3 ways rounds from 38.33 to 39")
     func roundPerPerson() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .fifteen
         vm.splitCount = 3
@@ -48,7 +49,7 @@ struct RoundingTests {
 
     @Test("Round tip with zero bill — stays zero")
     func roundTipZeroBill() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "0"
         vm.selectedPreset = .fifteen
         vm.selectedRounding = .roundTip
@@ -58,7 +59,7 @@ struct RoundingTests {
 
     @Test("Round total with exact amount — no change needed")
     func roundTotalExact() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .twenty
         vm.selectedRounding = .roundTotal
@@ -68,7 +69,7 @@ struct RoundingTests {
 
     @Test("Round per person with 1 person — same as total")
     func roundPerPersonSingle() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "95"
         vm.selectedPreset = .fifteen
         vm.splitCount = 1
@@ -79,7 +80,7 @@ struct RoundingTests {
 
     @Test("Custom tip with rounding — 18% on $55")
     func customTipWithRounding() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "55"
         vm.selectedPreset = .custom
         vm.customTipPercent = 18

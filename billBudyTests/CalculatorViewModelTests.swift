@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import billBudy
 
@@ -11,10 +12,11 @@ private extension Double {
 
 @Suite("CalculatorViewModel — Tip Math")
 struct TipMathTests {
+    private let defaults = TestDefaults()
 
     @Test("15% tip on $100")
     func fifteenPercentOnHundred() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .fifteen
         #expect(vm.tipAmount == 15.0)
@@ -23,7 +25,7 @@ struct TipMathTests {
 
     @Test("0% tip")
     func zeroPercent() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .zero
         #expect(vm.tipAmount == 0.0)
@@ -32,7 +34,7 @@ struct TipMathTests {
 
     @Test("25% tip on $200")
     func twentyFivePercentOnTwoHundred() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "200"
         vm.selectedPreset = .twentyFive
         #expect(vm.tipAmount == 50.0)
@@ -41,7 +43,7 @@ struct TipMathTests {
 
     @Test("Custom 18% tip")
     func customEighteenPercent() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .custom
         vm.customTipPercent = 18
@@ -51,7 +53,7 @@ struct TipMathTests {
 
     @Test("Custom 0% tip")
     func customZeroPercent() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .custom
         vm.customTipPercent = 0
@@ -61,7 +63,7 @@ struct TipMathTests {
 
     @Test("Custom 50% tip")
     func customFiftyPercent() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .custom
         vm.customTipPercent = 50
@@ -71,7 +73,7 @@ struct TipMathTests {
 
     @Test("5% tip on $80")
     func fivePercentOnEighty() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "80"
         vm.selectedPreset = .five
         #expect(vm.tipAmount == 4.0)
@@ -80,7 +82,7 @@ struct TipMathTests {
 
     @Test("10% tip on $50")
     func tenPercentOnFifty() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "50"
         vm.selectedPreset = .ten
         #expect(vm.tipAmount == 5.0)
@@ -89,7 +91,7 @@ struct TipMathTests {
 
     @Test("20% tip on $75")
     func twentyPercentOnSeventyFive() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "75"
         vm.selectedPreset = .twenty
         #expect(vm.tipAmount == 15.0)
@@ -98,14 +100,14 @@ struct TipMathTests {
 
     @Test("effectiveTipPercent uses preset when not custom")
     func effectiveTipPercentPreset() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.selectedPreset = .twenty
         #expect(vm.effectiveTipPercent == 20.0)
     }
 
     @Test("effectiveTipPercent uses customTipPercent when custom")
     func effectiveTipPercentCustom() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.selectedPreset = .custom
         vm.customTipPercent = 33
         #expect(vm.effectiveTipPercent == 33.0)
@@ -116,10 +118,11 @@ struct TipMathTests {
 
 @Suite("CalculatorViewModel — Split Math")
 struct SplitMathTests {
+    private let defaults = TestDefaults()
 
     @Test("No split (1 person)")
     func noSplit() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .fifteen
         vm.splitCount = 1
@@ -128,7 +131,7 @@ struct SplitMathTests {
 
     @Test("Split by 2")
     func splitByTwo() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .fifteen
         vm.splitCount = 2
@@ -137,7 +140,7 @@ struct SplitMathTests {
 
     @Test("Split by 3 (repeating decimal)")
     func splitByThree() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .zero
         vm.splitCount = 3
@@ -146,7 +149,7 @@ struct SplitMathTests {
 
     @Test("Split by 20 (max)")
     func splitByTwenty() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .zero
         vm.splitCount = 20
@@ -155,7 +158,7 @@ struct SplitMathTests {
 
     @Test("incrementSplit increases count")
     func incrementSplit() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.splitCount = 5
         vm.incrementSplit()
         #expect(vm.splitCount == 6)
@@ -163,7 +166,7 @@ struct SplitMathTests {
 
     @Test("decrementSplit decreases count")
     func decrementSplit() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.splitCount = 5
         vm.decrementSplit()
         #expect(vm.splitCount == 4)
@@ -171,7 +174,7 @@ struct SplitMathTests {
 
     @Test("incrementSplit clamped at 20")
     func incrementSplitMax() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.splitCount = 20
         vm.incrementSplit()
         #expect(vm.splitCount == 20)
@@ -179,7 +182,7 @@ struct SplitMathTests {
 
     @Test("decrementSplit clamped at 1")
     func decrementSplitMin() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.splitCount = 1
         vm.decrementSplit()
         #expect(vm.splitCount == 1)
@@ -190,10 +193,11 @@ struct SplitMathTests {
 
 @Suite("CalculatorViewModel — Edge Cases")
 struct EdgeCaseTests {
+    private let defaults = TestDefaults()
 
     @Test("Empty bill amount")
     func emptyBill() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = ""
         #expect(vm.billAmount == 0.0)
         #expect(vm.tipAmount == 0.0)
@@ -203,7 +207,7 @@ struct EdgeCaseTests {
 
     @Test("Zero bill")
     func zeroBill() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "0"
         #expect(vm.billAmount == 0.0)
         #expect(vm.tipAmount == 0.0)
@@ -212,14 +216,14 @@ struct EdgeCaseTests {
 
     @Test("Invalid input")
     func invalidInput() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "abc"
         #expect(vm.billAmount == 0.0)
     }
 
     @Test("Very large bill")
     func veryLargeBill() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "999999.99"
         vm.selectedPreset = .fifteen
         #expect(vm.billAmount == 999999.99)
@@ -229,14 +233,14 @@ struct EdgeCaseTests {
 
     @Test("Decimal input")
     func decimalInput() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "42.50"
         #expect(vm.billAmount == 42.5)
     }
 
     @Test("calculation snapshot bundles all values")
     func calculationSnapshot() {
-        let vm = CalculatorViewModel()
+        let vm = defaults.makeViewModel()
         vm.billAmountText = "100"
         vm.selectedPreset = .twenty
         vm.splitCount = 4
@@ -246,6 +250,74 @@ struct EdgeCaseTests {
         #expect(calc.perPersonAmount == 30.0)
         #expect(calc.tipPercent == 20.0)
         #expect(calc.splitCount == 4)
+    }
+}
+
+// MARK: - Persistence
+
+@Suite("CalculatorViewModel — Persistence")
+struct PersistenceTests {
+    private let defaults = TestDefaults()
+
+    @Test("A view model on a new store starts with the default preferences")
+    func newStoreGivesDefaults() {
+        let vm = defaults.makeViewModel()
+        #expect(vm.selectedCurrency == .nok)
+        #expect(vm.selectedPreset == .fifteen)
+        #expect(vm.customTipPercent == 18.0)
+        #expect(vm.splitCount == 1)
+        #expect(vm.selectedRounding == .none)
+    }
+
+    @Test("Saved preferences come back in a new view model on the same store")
+    func savedPreferencesRoundTrip() {
+        let store = defaults.makeStore()
+        let saved = CalculatorViewModel(defaults: store)
+        saved.billAmountText = "100"
+        saved.selectedCurrency = .usd
+        saved.selectedPreset = .custom
+        saved.customTipPercent = 33
+        saved.splitCount = 7
+        saved.selectedRounding = .roundPerPerson
+        saved.savePreferences()
+
+        let restored = CalculatorViewModel(defaults: store)
+        #expect(restored.selectedCurrency == .usd)
+        #expect(restored.selectedPreset == .custom)
+        #expect(restored.customTipPercent == 33.0)
+        #expect(restored.splitCount == 7)
+        #expect(restored.selectedRounding == .roundPerPerson)
+        #expect(restored.billAmountText.isEmpty) // the bill isn't a preference
+    }
+
+    @Test("Saving writes all 5 preferences to the injected store and none to the standard defaults")
+    func savingLeavesStandardDefaultsAlone() {
+        let keys = ["savedCurrency", "savedTip", "savedSplit", "savedCustomTip", "savedRounding"]
+        let standardBefore = keys.map { UserDefaults.standard.object(forKey: $0) as? NSObject }
+        let store = defaults.makeStore()
+        let vm = CalculatorViewModel(defaults: store)
+        vm.selectedCurrency = .kes
+        vm.selectedPreset = .twentyFive
+        vm.customTipPercent = 42
+        vm.splitCount = 9
+        vm.selectedRounding = .roundTip
+        vm.savePreferences()
+
+        #expect(keys.allSatisfy { store.object(forKey: $0) != nil })
+        #expect(keys.map { UserDefaults.standard.object(forKey: $0) as? NSObject } == standardBefore)
+    }
+
+    @Test("Stores are separate, and each is removed when its TestDefaults is released")
+    func storesAreSeparateAndRemoved() {
+        let store: UserDefaults
+        do {
+            let testDefaults = TestDefaults()
+            store = testDefaults.makeStore()
+            store.set(2, forKey: "savedRounding")
+            #expect(store.integer(forKey: "savedRounding") == 2)
+            #expect(testDefaults.makeStore().object(forKey: "savedRounding") == nil)
+        } // released here, as each test's TestDefaults is when the test ends
+        #expect(store.object(forKey: "savedRounding") == nil)
     }
 }
 

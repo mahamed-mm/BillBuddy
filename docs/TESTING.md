@@ -10,6 +10,26 @@ Unit test target `billBudyTests` is configured with 39 passing tests using the S
 
 ---
 
+## Test Isolation
+
+Tests never read or write the app's real saved preferences. `CalculatorViewModel` restores and saves its 5 preferences through the store passed to `init(defaults:)` (`.standard` in the app and previews). Each test suite that makes view models keeps a `TestDefaults` (`billBudyTests/TestDefaults.swift`) and calls `defaults.makeViewModel()`, which gives every view model a new, empty `UserDefaults(suiteName:)` with a unique name. Swift Testing creates a new suite instance for each test, so each test's `UserDefaults` suites are removed (`removePersistentDomain(forName:)`) when it ends. Results don't depend on what the simulator has saved or on other tests running in parallel.
+
+- Don't call `CalculatorViewModel()` in `billBudyTests`: `grep -rn "CalculatorViewModel()" billBudyTests` must return nothing. For two view models on one store, like a relaunch, pass `defaults.makeStore()` to both.
+- To check isolation, pre-seed the app's saved preferences and run the suite. Write the plist in the app's data container: `simctl spawn … defaults write com.hurud.billBudy` writes a device-level domain the app never reads. The app must be installed and the simulator booted; `xcodebuild test` shuts it down to clone it, so boot it again before cleaning up.
+
+  ```bash
+  UDID=<simulator UDID>
+  xcrun simctl boot $UDID
+  PREFS="$(xcrun simctl get_app_container $UDID com.hurud.billBudy data)/Library/Preferences/com.hurud.billBudy"
+  xcrun simctl spawn $UDID defaults write "$PREFS" savedRounding -int 3   # Per Person ↑
+  # Run the suite, boot the simulator again, then:
+  xcrun simctl spawn $UDID defaults delete "$PREFS"
+  ```
+
+- iOS keeps a removed suite as an empty plist. Parallel runs (the default) use simulator clones that are thrown away; a run with `-parallel-testing-enabled NO` leaves one empty `billBudyTests.<UUID>.plist` per saving test in the app's `Library/Preferences`.
+
+---
+
 ## Testing Goals (V1)
 
 - **90%+ code coverage** on `CalculatorViewModel` (all business logic)
