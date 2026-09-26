@@ -174,11 +174,19 @@ BillBuddy development to-do list, organized by milestone.
 
 ### V2 Bug Fixes
 
-- [ ] **BF-1** Currency picker flags and rounding-row clipping on iOS 26 (reported 2026-09-25 from a simulator screenshot) · deps: —
+- [x] **BF-1** Currency picker flags and rounding-row clipping on iOS 26 (reported 2026-09-25 from a simulator screenshot) · deps: — · 9cd3765 + ab13cb8, code review APPROVED 5/5 and design review Mode B APPROVED in round 2 (round 1 [B1]: dead tap bands on the widened pills; found by both reviewers and CodeRabbit)
   - AC: every currency option shows a rendered flag and its full code (NOK, USD, KES), with no "?" boxes or truncation, at the default text size and AX5, in light and dark mode. Keep the native segmented control if the flags render in it; otherwise use a chip row with flags (product decision)
     - Resolved without an app change: the "?" boxes come from the iOS 26.3.1 Simulator runtime, whose emoji font file is missing (Safari shows the same boxes), and 9cd3765 traces the truncation to the same fallback glyphs. The unchanged `CurrencyPickerView` renders the Norwegian, US, and Kenyan flags correctly on iOS 17.5 (PM check, 2026-09-25), so the native segmented control stays
   - AC: no rounding pill is clipped at the content-padding edge, and all 4 are reachable at AX5
   - AC: currency selection, persistence, haptics, VoiceOver selection state, and tokens only as before; code review plus design review Mode B, with before/after screenshots
+  - Flags: no app change. Both variants of the iOS 26.3.1 Simulator runtime (arm64-only and universal, reinstalled 2026-09-26) ship the emoji font only as `Fonts/CoreAddition/AppleColorEmoji-160px.ttc`, while CoreText opens `Fonts/Core/AppleColorEmoji.ttc`, so every emoji renders as a "?" box (Safari too). The flags render correctly on iOS 17.5. Check flags on iOS 17.5 or a device.
+  - Backlog (from the BF-1 reviews):
+    - `TipPresetButton` has a `.clear` fill without `contentShape`, so taps on the empty chip area can miss (design N1, code N2). `TipSelectorView` still uses `LazyVGrid`, whose off-screen chips leave the accessibility tree at AX5 (code r2 N3). It keeps 2 columns at AX sizes, so "Custom" hyphenates (design r2 N6): reuse `columnCount(for:)` and an eager `Grid`.
+    - The rounding pills use `Capsule()`, while STYLE-GUIDE says chip radius is `cornerRadius` (16 pt) (design N2).
+    - Rounding VoiceOver labels read "Tip up arrow rounding". Suggested: "Round tip up" and so on, with the `.isSelected` trait and `.isHeader` on "Rounding" (design N3).
+    - In light previews, selected chip text (`bbTeal` on `bbSelectedChip`) is 1.4:1 (design N4). Forced dark hides it at runtime; 2A-18's `bbTealText` addresses it.
+    - ARCHITECTURE's view hierarchy omits `RoundingSelectorView` and says "TipPresetButton ×6" (there are 7) (code N4).
+    - The UI harness `LazyTreeProbeUITests` needs `.firstMatch` on its "Results" query (scratch harness only).
 
 ### Phase 2A — Unequal Splits
 
