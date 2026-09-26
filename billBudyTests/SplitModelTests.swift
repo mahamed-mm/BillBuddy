@@ -122,38 +122,18 @@ struct PersonShareTests {
         #expect(share.label == "Person 4")
     }
 
-    @Test("Double accessors give the amount in whole units in every currency", arguments: [
+    // The conversion itself, and its scale, are tested in the Currency suite.
+    @Test("Double accessors give the amount in whole units in every 2-decimal currency", arguments: [
         (0, 0.0), (1, 0.01), (29, 0.29), (17_250, 172.5), (42_167, 421.67),
         (99_999_999, 999_999.99), (1_000_000_000_000_000, 10_000_000_000_000.0),
     ])
     func doubleAccessors(minorUnits: Int, expected: Double) {
-        for currency in Currency.allCases {
+        for currency in Currency.allCases where currency.fractionDigits == 2 {
             let share = PersonShare(
                 personNumber: 1, billPortionMinorUnits: minorUnits, shareMinorUnits: minorUnits, currency: currency
             )
             #expect(share.billPortionAmount == expected)
             #expect(share.shareAmount == expected)
         }
-    }
-
-    @Test("The scale comes from Currency.fractionDigits")
-    func scaleFromFractionDigits() {
-        for currency in Currency.allCases {
-            let share = PersonShare(
-                personNumber: 1, billPortionMinorUnits: 1_234, shareMinorUnits: 1_234, currency: currency
-            )
-            let expected = PersonShare.amount(minorUnits: 1_234, fractionDigits: currency.fractionDigits)
-            #expect(share.billPortionAmount == expected)
-            #expect(share.shareAmount == expected)
-        }
-        #expect(PersonShare.amount(minorUnits: 1_234, fractionDigits: 0) == 1_234.0)
-        #expect(PersonShare.amount(minorUnits: 1_234, fractionDigits: 1) == 123.4)
-        #expect(PersonShare.amount(minorUnits: 1_234, fractionDigits: 3) == 1.234)
-        #expect(PersonShare.amount(minorUnits: 5, fractionDigits: 3) == 0.005)
-    }
-
-    @Test("A negative scale counts as 0")
-    func negativeScale() {
-        #expect(PersonShare.amount(minorUnits: 1_234, fractionDigits: -1) == 1_234.0)
     }
 }

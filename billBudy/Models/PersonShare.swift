@@ -24,26 +24,8 @@ struct PersonShare: Identifiable, Equatable {
     var label: String { PersonSplit.label(personNumber: personNumber) }
 
     /// `billPortionMinorUnits` in whole units of `currency`, for display: 36_667 øre → 366.67.
-    var billPortionAmount: Double {
-        Self.amount(minorUnits: billPortionMinorUnits, fractionDigits: currency.fractionDigits)
-    }
+    var billPortionAmount: Double { currency.amount(minorUnits: billPortionMinorUnits) }
 
     /// `shareMinorUnits` in whole units of `currency`, for display: 42_167 øre → 421.67.
-    var shareAmount: Double {
-        Self.amount(minorUnits: shareMinorUnits, fractionDigits: currency.fractionDigits)
-    }
-
-    /// `minorUnits` divided by 10^`fractionDigits`: the conversion behind the `Double` accessors,
-    /// testable at scales no currency uses yet. A negative `fractionDigits` counts as 0.
-    ///
-    /// Up to 2^53 minor units, the result is the `Double` nearest the decimal amount (42_167 at
-    /// 2 digits gives the same `Double` as `421.67`), because both operands are exact and the
-    /// division rounds once.
-    static func amount(minorUnits: Int, fractionDigits: Int) -> Double {
-        var unit = 1.0
-        for _ in 0..<max(0, fractionDigits) {
-            unit *= 10
-        }
-        return Double(minorUnits) / unit
-    }
+    var shareAmount: Double { currency.amount(minorUnits: shareMinorUnits) }
 }

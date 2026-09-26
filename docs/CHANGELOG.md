@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - **Deployment target lowered to iOS 17.0** — the project was set to iOS 26.2, so the app couldn't be installed on any older iOS version, although the README, `plan.md`, and `CLAUDE.md` promise iOS 17+. `IPHONEOS_DEPLOYMENT_TARGET` is now 17.0 in the project's Debug and Release configurations, which both targets inherit. No code changes were needed: the app and the tests use no API newer than iOS 17, and the build has 0 warnings. Verified on the iOS 17.5 simulator (iPhone 15): the full test suite passes, and a smoke run covered bill entry (including "12,50"), tip, split, rounding, currency, and preferences surviving a relaunch.
 
+### Fixed
+
+- **Half-øre tip and total rounding** — a tip that came to exactly half an øre or cent could round down, because the math ran in floating point: a bill of 33,30 at 15 % showed a tip of 4,99 kr and a total of 38,29 kr. The tip and total are now computed exactly in øre and cents, with the tip rounded half-up to the nearest øre or cent, so that bill shows 5,00 kr and 38,30 kr. A bill typed with more than two decimals now counts as rounded to the nearest øre or cent ("1,005" is 1,01). Tip ↑ and Total ↑ now round up the tip or total as shown: 15 % of 6,67 shows a tip of 1,00 kr, and Tip ↑ keeps it at 1,00 kr instead of raising it to 2,00 kr. A bill above 10 000 000 000 000,00 now counts as invalid input, like any other text the app can't read.
+
 ---
 
 ## [2.0.1] — 2026-09-26

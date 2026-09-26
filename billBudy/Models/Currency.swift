@@ -36,4 +36,27 @@ enum Currency: String, CaseIterable, Identifiable {
         case .nok, .usd, .kes: 2
         }
     }
+
+    /// `minorUnits` in whole units of this currency, for display: 42_167 øre → 421.67.
+    ///
+    /// The one minor-units → `Double` conversion: every amount the app computes in minor units
+    /// becomes a `Double` here, and nowhere else.
+    func amount(minorUnits: Int) -> Double {
+        Self.amount(minorUnits: minorUnits, fractionDigits: fractionDigits)
+    }
+
+    /// `minorUnits` divided by 10^`fractionDigits`: the scale behind `amount(minorUnits:)`,
+    /// testable at scales no currency uses yet. A negative `fractionDigits` counts as 0.
+    ///
+    /// Exact within two bounds: up to 2^53 minor units, and `fractionDigits` ≤ 22. Inside them,
+    /// both operands are exact `Double`s (10^22 is the largest power of ten a `Double` holds
+    /// exactly), so the division rounds once and gives the `Double` nearest the decimal amount:
+    /// 42_167 at 2 digits gives the same `Double` as `421.67`.
+    static func amount(minorUnits: Int, fractionDigits: Int) -> Double {
+        var unit = 1.0
+        for _ in 0..<max(0, fractionDigits) {
+            unit *= 10
+        }
+        return Double(minorUnits) / unit
+    }
 }

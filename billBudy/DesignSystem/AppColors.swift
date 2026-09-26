@@ -26,6 +26,13 @@ enum AppColors {
 
     static let bbSecondaryText = Color.secondary
 
+    // Teal for text and glyphs: bbTeal as text is only 1.4:1 on light surfaces.
+    static let bbTealText = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0, green: 0.898, blue: 0.8, alpha: 1) // #00E5CC — same as bbTeal
+            : UIColor(red: 0, green: 0.412, blue: 0.361, alpha: 1) // #00695C — brand hue, darkened
+    })
+
     // MARK: - Chips & Selection
 
     static let bbSelectedChip = Color(UIColor { traits in
@@ -54,5 +61,14 @@ enum AppColors {
         traits.userInterfaceStyle == .dark
             ? UIColor(white: 0.0, alpha: 0.4) // deeper shadow for elevation
             : UIColor(white: 0.0, alpha: 0.08) // soft light-mode shadow
+    })
+
+    // MARK: - Status
+
+    // Problem states only, always paired with an icon and words, never color alone.
+    static let bbWarning = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 1.0, green: 0.624, blue: 0.039, alpha: 1) // #FF9F0A — systemOrange (dark)
+            : UIColor(red: 0.788, green: 0.204, blue: 0, alpha: 1) // #C93400 — Increase Contrast systemOrange (light)
     })
 }

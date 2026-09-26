@@ -27,15 +27,13 @@ All adaptive colors use `Color(UIColor { traits in ... })` with explicit dark/li
 | `bbCardBackground`   | `#FFFFFF`                     | `#1C1C1E`                      | Card and surface fills (white / elevated dark) |
 | `bbPrimaryText`      | `.primary`                    | `.primary`                     | Main text — amounts, labels, headings |
 | `bbSecondaryText`    | `.secondary`                  | `.secondary`                   | Supporting text — descriptions, captions |
+| `bbTealText`         | `#00695C`                     | `#00E5CC` (= `bbTeal`)         | Teal *text and glyphs*: the selected split-mode chip's label and checkmark, and the "Clear amounts" button. `bbTeal` text is 1.4:1 on light surfaces. Source: `docs/design/2A-unequal-splits.md` §5 |
 | `bbSelectedChip`     | `bbTeal` @ 10% opacity        | `bbTeal` @ 15% opacity         | Background fill for selected tip preset chips |
 | `bbSelectedBorder`   | `bbTeal`                      | `bbTeal`                       | Border for selected tip preset chips |
 | `bbUnselectedBorder` | `systemGray4` (`#D1D1D6`)     | `systemGray3` (`#3A3A3C`)      | Border for unselected tip preset chips |
 | `bbCardBorder`       | `black` @ 4% opacity          | `white` @ 8% opacity           | Subtle glass-edge border on cards |
 | `bbCardShadow`       | `black` @ 8% opacity          | `black` @ 40% opacity          | Card shadow (soft light / deep dark elevation) |
-| `bbWarning` (proposed) | `#C93400`                   | `#FF9F0A`                      | Problem states only, always paired with an icon and words: split-status icons (bill unreadable, invalid row, over, left) and the invalid-amount field border, icon, and caption. Source: `docs/design/2A-unequal-splits.md` §5 |
-| `bbTealText` (proposed) | `#00695C`                  | `#00E5CC` (= `bbTeal`)         | Teal *text and glyphs*: the selected split-mode chip's label and checkmark, and the "Clear amounts" button. `bbTeal` text is 1.4:1 on light surfaces. Source: `docs/design/2A-unequal-splits.md` §5 |
-
-Rows marked **(proposed)** are waiting for design-review approval of `docs/design/2A-unequal-splits.md`. They aren't in `DesignSystem/` yet.
+| `bbWarning`          | `#C93400`                     | `#FF9F0A`                      | Problem states only, always paired with an icon and words: split-status icons (bill unreadable, invalid row, over, left) and the invalid-amount field border, icon, and caption. Source: `docs/design/2A-unequal-splits.md` §5 |
 
 ### Color Usage Rules
 
@@ -43,6 +41,9 @@ Rows marked **(proposed)** are waiting for design-review approval of `docs/desig
 - **Always** reference `AppColors` tokens
 - `bbTeal` is for interactive and selected states only — don't use it for large fills
 - Use `bbPrimaryText` for all amounts and headings, `bbSecondaryText` for labels and descriptions
+  - **Exception:** automatic previews (input previews) use `bbSecondaryText`. An automatic `PersonSplitRow` (no typed amount) previews its share this way, so it reads as a suggestion, not a typed value. Typed amounts stay `bbPrimaryText`. Results-card amounts, including automatic people's shares, stay `bbPrimaryText`. Source: `docs/design/2A-unequal-splits.md` §4.5
+- **AccentColor** (the asset that tints the text caret, keyboard-toolbar items, and system dialog buttons) stays a single `#00E5CC` in every appearance. Don't add a light variant: on iOS 17 the keyboard toolbar resolves AccentColor from the device's appearance, outside the app's forced-dark window, so a light variant would show on the dark toolbar at about 2.8:1 (TASKS Q10, 2A-18 [B1]).
+- Don't bridge an adaptive token to UIKit with `UIColor(_:)`: on iOS 17 the result loses its dark value and resolves to the light one even under dark traits. Resolve colors in SwiftUI (`Color.resolve(in:)`), or build the UIKit color with its own dynamic provider.
 
 ---
 
@@ -50,16 +51,16 @@ Rows marked **(proposed)** are waiting for design-review approval of `docs/desig
 
 Defined in `DesignSystem/AppTypography.swift`. All fonts use the `.rounded` design variant.
 
-| Token         | Font Definition                                              | Usage |
-|---------------|--------------------------------------------------------------|-------|
-| `.largeTitle` | `.system(.largeTitle, design: .rounded, weight: .bold)`      | Bill amount display |
-| `.title`      | `.system(.title2, design: .rounded, weight: .semibold)`      | Section headings, result values |
-| `.headline`   | `.system(.headline, design: .rounded, weight: .medium)`      | Card titles, stepper labels |
-| `.body`       | `.system(.body, design: .rounded)`                           | General text, descriptions |
-| `.caption`    | `.system(.caption, design: .rounded)`                        | Fine print, secondary labels |
-| `.mono`       | `.system(.title, design: .monospaced, weight: .bold)`        | Currency amounts in results (tabular alignment) |
-| `.amountField` (proposed) | `.system(.headline, design: .rounded, weight: .medium).monospacedDigit()` | Typed and automatic amounts in `PersonSplitRow` |
-| `.amountMinimumScale` (proposed) | `0.5` (`CGFloat`, used with `.minimumScaleFactor`) | One-line amounts that must shrink instead of wrapping: `PersonSplitRow` automatic amounts and `BreakdownRow` values |
+| Token                 | Font Definition                                                           | Usage |
+|-----------------------|---------------------------------------------------------------------------|-------|
+| `.largeTitle`         | `.system(.largeTitle, design: .rounded, weight: .bold)`                   | Bill amount display |
+| `.title`              | `.system(.title2, design: .rounded, weight: .semibold)`                   | Section headings, result values |
+| `.headline`           | `.system(.headline, design: .rounded, weight: .medium)`                   | Card titles, stepper labels |
+| `.body`               | `.system(.body, design: .rounded)`                                        | General text, descriptions |
+| `.caption`            | `.system(.caption, design: .rounded)`                                     | Fine print, secondary labels |
+| `.mono`               | `.system(.title, design: .monospaced, weight: .bold)`                     | Currency amounts in results (tabular alignment) |
+| `.amountField`        | `.system(.headline, design: .rounded, weight: .medium).monospacedDigit()` | Typed and automatic amounts in `PersonSplitRow` |
+| `.amountMinimumScale` | `0.5` (`CGFloat`, used with `.minimumScaleFactor`)                        | One-line amounts that must shrink instead of wrapping: `PersonSplitRow` automatic amounts and `BreakdownRow` values |
 
 ### Typography Usage Rules
 
@@ -85,7 +86,7 @@ Defined in `DesignSystem/AppSpacing.swift`. A consistent spatial scale used for 
 | `xxl`          | 48         | Top/bottom screen margins |
 | `cornerRadius` | 16         | Buttons, chips, small cards |
 | `cardRadius`   | 20         | Main result card, GlassCard containers |
-| `minTapTarget` (proposed) | 44 | Minimum width and height of every tap target (HIG default). Apply it as `minWidth`/`minHeight` so targets grow with Dynamic Type |
+| `minTapTarget` | 44         | Minimum width and height of every tap target (HIG default). Apply it as `minWidth`/`minHeight` so targets grow with Dynamic Type |
 
 ### Spacing Usage Rules
 
