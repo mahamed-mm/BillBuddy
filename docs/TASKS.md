@@ -221,7 +221,7 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
   - AC: minor units come straight from the text with no `Double` step: `"12,50"` → 1250, `"0.29"` → 29, `"1.005"` → 101 (half-up)
   - AC: `billAmount` uses the parser (`billAmountText = "12,50"` → `billAmount == 12.5`); the 50 existing tests pass unchanged
   - AC: one self-contained commit (parser, `billAmount`, tests, CHANGELOG "Fixed") that cherry-picks cleanly onto `main` for hotfix 2.0.1 (Q8)
-- [ ] **2A-2** Test isolation: injectable `UserDefaults` for `CalculatorViewModel` (~1h) · deps: — · ‖
+- [x] **2A-2** Test isolation: injectable `UserDefaults` for `CalculatorViewModel` (~1h) · deps: — · ‖ · c13f97b, code review APPROVED 5/5, 0 fix rounds (seeded `savedRounding = 2`: parent 95/96 with `veryLargeBill` failing, c13f97b 100/100)
   - AC: `init(defaults: UserDefaults = .standard)`; all 5 persisted preferences read and write that store; app and preview behavior unchanged
   - AC: tests get a fresh `UserDefaults(suiteName:)` per ViewModel through one shared helper, including the 3 calls in the `BillParsingTests` suite that 2A-1 added (`billBudyTests/AmountParserTests.swift`); `grep -rn "CalculatorViewModel()" billBudyTests` → 0 matches (36 today)
   - AC: new round-trip test: set currency, tip, custom %, split, and rounding → `savePreferences()` → a new ViewModel on the same suite restores all 5
@@ -338,10 +338,10 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 
 - Rejected bill input (for example a pasted "1 234,50") silently computes as 0, with no feedback in the bill field. Consider reusing 2A-10's invalid-input state for `BillInputView`. The spec's S1b status covers it in Custom mode only (spec §7); over-cap input (2A-5) behaves the same way.
 - `MARKETING_VERSION` is 1.0 in the project while CHANGELOG is at 2.0.0 (release hygiene). Decide before tagging the 2.0.1 hotfix (Q8).
-- [2A-1 N1] The tests read the app's real saved preferences. After manual use leaves Per Person ↑ selected, `splitByTwo` and `splitByThree` fail (59/61), because they never set `selectedRounding`. 2A-2 should pre-seed every non-default rounding mode (1, 2, 3), not only 2. Until then, run tests on a simulator with clean app data (the hotfix validation included).
+- [2A-1 N1] Resolved by 2A-2 (c13f97b): every test view model gets its own `UserDefaults` suite, and a test checks that saving never touches `.standard`, so the app's saved preferences can't affect the tests. The developer ran seeds 1, 2, and 3 and all five preferences non-default.
 - [2A-1 N2] Under the any-region rule, a pasted US-grouped `"1,234"` parses as 1.234, a silent 1000× under-read. The decimal pad can't type it, so it takes a paste or a hardware keyboard. Consider rejecting more than 2 fraction digits after "," for 2-decimal currencies.
 - [2A-1 N3] The scale path in `AmountParser.minorUnits` is untested, because every currency uses 2. Add an internal `minorUnits(from:fractionDigits:)` seam and test it at 0 and 3 (`",5"`@0 → 1, `"1,0005"`@3 → 1001).
-- [2A-1 N4] TESTING.md still says 39 tests (61 now) and has no AmountParser section. Its manual QA lacks a "type 12,50 with Region = Norway" step, which should be checked before tagging 2.0.1 (the rest is covered by 2A-14). CLAUDE.md also says 39 (human-owned).
+- [2A-1 N4] TESTING.md still says 39 tests (100 now; its line 9, just above 2A-2's new "Test Isolation" section, per [2A-2 N2]) and has no AmountParser section. Its manual QA lacks a "type 12,50 with Region = Norway" step, which should be checked before tagging 2.0.1 (the rest is covered by 2A-14). CLAUDE.md also says 39 (human-owned).
 - [2A-1 N6] `AmountParser` is stateless, so it could be `nonisolated` if a caller off the main actor ever appears.
 - [2A-4 N2] Add `#expect(shares == shares.sorted(by: >))` to the 140-case equal-weights test. It pins the lowest-index leftover rule that the automatic rows rely on for every n and total.
 - [2A-4 N3] `roundsUp` assumes 2 decimals for every currency. Filter on `fractionDigits == 2`, so a JPY/0-decimal currency in 2B doesn't break the test.
@@ -353,6 +353,9 @@ Planned 2026-09-25 by v2-planner; decisions recorded the same day. Aligned the s
 - [2A-15 review] CHANGELOG's 2A-15 entry ends with a verification sentence that belongs in a PR body, not release notes. Trim it in 2A-14.
 - [2A-15 review] TESTING.md (2A-14): Xcode 26.2 refuses every iOS simulator destination, 17.5 included, and actool fails, unless an iOS 26.x runtime is installed. The iOS 26.3.1 runtime (both variants) can't render emoji, so check flags on iOS 17.5.
 - [2A-3 review] Spec question: a pasted `" 5 "` (spaces around a number) is a typed row, because it isn't empty after trimming, but `AmountParser` rejects whitespace, so the row shows "Invalid amount" (S2). That follows spec §3.1 as written, and only paste or a hardware keyboard can enter the spaces. Parsing the trimmed text instead would be a spec change; decide it together with the rejected-bill-input item above.
+- [2A-2 N1] TESTING.md's "Test Isolation" clean-up step, `defaults delete "$PREFS"`, deletes the app's whole preferences domain, not just the seed. Delete only the seeded key (`defaults delete "$PREFS" savedRounding`), or back up first: `defaults export "$PREFS" <backup.plist>` before seeding, then `defaults delete "$PREFS"` and `defaults import "$PREFS" <backup.plist>` afterwards (the reviewer checked both through `simctl spawn` on 26.3.1). 2A-14 can take it.
+- [2A-2 follow-up] Pre-seeding has to write the app's data container, as TESTING.md now shows (`simctl spawn <UDID> defaults write "<data container>/Library/Preferences/com.hurud.billBudy" …`). `simctl spawn <UDID> defaults write com.hurud.billBudy …` and `defaults delete com.hurud.billBudy` only touch a device-level domain that the app never reads, so earlier "clean app data" steps that used them cleared nothing. 2A-14's manual QA should use the container path.
+- [2A-2 follow-up] ARCHITECTURE.md's Input Properties table and Data Flow step 2 omit `selectedRounding` (it predates 2A-2; 2A-14).
 
 ### Phase 2B — Live Currency Conversion
 
