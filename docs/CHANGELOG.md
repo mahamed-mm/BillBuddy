@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- **Deployment target lowered to iOS 17.0** — the project was set to iOS 26.2, so the app couldn't be installed on any older iOS version, although the README, `plan.md`, and `CLAUDE.md` promise iOS 17+. `IPHONEOS_DEPLOYMENT_TARGET` is now 17.0 in the project's Debug and Release configurations, which both targets inherit. No code changes were needed: the app and the tests use no API newer than iOS 17, and the build has 0 warnings. Verified on the iOS 17.5 simulator (iPhone 15): the full test suite passes, and a smoke run covered bill entry (including "12,50"), tip, split, rounding, currency, and preferences surviving a relaunch.
+
 ### Fixed
 
 - **Comma-decimal bill input** — in regions that use a decimal comma, such as Norway, the decimal pad types "," and every result showed 0. The new `AmountParser` enum accepts "," or "." as the decimal separator on any region and rejects text that `Double(_:)` used to accept ("-5", "nan", "inf", "1e5"). It also converts typed text to exact minor units (øre, cents) with half-up rounding, at the scale set by the new `Currency.fractionDigits`. `CalculatorViewModel.billAmount` now parses through it. Covered by 11 new tests in `AmountParserTests.swift`.
